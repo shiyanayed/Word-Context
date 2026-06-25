@@ -1,0 +1,6 @@
+{
+  "name": "Word Context",
+  "description": "Revealing the original first-century historical, cultural, and legal meaning of Bible words as understood by their original audience.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
