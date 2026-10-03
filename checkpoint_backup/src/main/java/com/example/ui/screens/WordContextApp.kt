@@ -38,8 +38,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
-import com.example.data.local.MorphologicalRow
-import com.example.data.local.PhilologyFamilyHelper
 import com.example.data.model.WordStudy
 import com.example.data.verification.SourceTrustVerifier
 import com.example.data.verification.TrustTier
@@ -1034,391 +1032,6 @@ fun getWordFamily(word: String, testament: String): List<String> {
 }
 
 @Composable
-fun MorphologicalProfileCard(
-    study: WordStudy,
-    modifier: Modifier = Modifier
-) {
-    val clipboardManager = LocalClipboardManager.current
-    val context = LocalContext.current
-    var isMarkdownView by remember { mutableStateOf(false) }
-
-    val philProfile = remember(study.word, study.rootLemma, study.morphologicalFamilyTable, study.translationDisconnect) {
-        PhilologyFamilyHelper.getPhilologicalProfile(
-            word = study.word,
-            originalWord = study.originalWord,
-            transliteration = study.transliteration,
-            testament = study.testament,
-            customRootLemma = study.rootLemma,
-            customTable = study.morphologicalFamilyTable,
-            customDisconnect = study.translationDisconnect
-        )
-    }
-
-    val markdownTable = remember(philProfile, study.morphologicalFamilyTable) {
-        if (study.morphologicalFamilyTable.isNotBlank()) {
-            study.morphologicalFamilyTable
-        } else {
-            PhilologyFamilyHelper.buildMarkdownTable(philProfile.morphologicalRows)
-        }
-    }
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF161B27)),
-        border = BorderStroke(1.dp, Color(0xFFC9A84C).copy(alpha = 0.4f)),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .background(Color(0xFFC9A84C).copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp))
-                            .padding(6.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AutoAwesome,
-                            contentDescription = "Philological Analysis",
-                            tint = Color(0xFFC9A84C),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(
-                            text = "ORIGINAL LANGUAGE LEMMA PROFILE",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFC9A84C),
-                            letterSpacing = 1.sp,
-                            fontFamily = FontFamily.Serif
-                        )
-                        Text(
-                            text = "Co-presented Root Family • ${philProfile.originalLanguage}",
-                            fontSize = 10.sp,
-                            color = Color(0xFF8B949E)
-                        )
-                    }
-                }
-
-                Box(
-                    modifier = Modifier
-                        .background(Color(0xFF238636).copy(alpha = 0.15f), shape = RoundedCornerShape(12.dp))
-                        .border(1.dp, Color(0xFF238636).copy(alpha = 0.3f), shape = RoundedCornerShape(12.dp))
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = "UNIFIED ROOT",
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF3FB950),
-                        letterSpacing = 0.8.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // 1. Root Lemma Highlight Box
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF0D1117), shape = RoundedCornerShape(8.dp))
-                    .border(1.dp, Color(0xFF30363D), shape = RoundedCornerShape(8.dp))
-                    .padding(12.dp)
-            ) {
-                Column {
-                    Text(
-                        text = "ROOT LEMMA & CO-PRESENTED ANCHOR",
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF8B949E),
-                        letterSpacing = 1.sp
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = philProfile.rootLemma,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFF0F6FC),
-                        fontFamily = FontFamily.Serif
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 2. Comparative Table Header & View Mode Switcher
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "COMPARATIVE WORD FAMILY ANALYSIS",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFC9A84C),
-                    letterSpacing = 0.8.sp
-                )
-
-                // Mode toggle
-                Row(
-                    modifier = Modifier
-                        .background(Color(0xFF0D1117), shape = RoundedCornerShape(6.dp))
-                        .border(1.dp, Color(0xFF21262D), shape = RoundedCornerShape(6.dp))
-                        .padding(2.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                if (!isMarkdownView) Color(0xFF21262D) else Color.Transparent,
-                                shape = RoundedCornerShape(4.dp)
-                            )
-                            .clickable { isMarkdownView = false }
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
-                    ) {
-                        Text(
-                            text = "Table",
-                            fontSize = 10.sp,
-                            fontWeight = if (!isMarkdownView) FontWeight.Bold else FontWeight.Normal,
-                            color = if (!isMarkdownView) Color(0xFFF0F6FC) else Color(0xFF8B949E)
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                if (isMarkdownView) Color(0xFF21262D) else Color.Transparent,
-                                shape = RoundedCornerShape(4.dp)
-                            )
-                            .clickable { isMarkdownView = true }
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
-                    ) {
-                        Text(
-                            text = "Markdown",
-                            fontSize = 10.sp,
-                            fontWeight = if (isMarkdownView) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isMarkdownView) Color(0xFFF0F6FC) else Color(0xFF8B949E)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            if (!isMarkdownView) {
-                // Formatted Visual Comparative Table
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .border(1.dp, Color(0xFF30363D), RoundedCornerShape(8.dp))
-                ) {
-                    Column {
-                        // Table header row
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFF21262D))
-                                .padding(horizontal = 10.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "PART OF SPEECH",
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF8B949E),
-                                modifier = Modifier.weight(1.1f)
-                            )
-                            Text(
-                                text = "ORIGINAL / TRANSLIT",
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF8B949E),
-                                modifier = Modifier.weight(1.3f)
-                            )
-                            Text(
-                                text = "ENGLISH TRANSLATION",
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF8B949E),
-                                modifier = Modifier.weight(1.6f)
-                            )
-                        }
-
-                        // Data rows
-                        philProfile.morphologicalRows.forEachIndexed { index, row ->
-                            val bg = if (index % 2 == 0) Color(0xFF0D1117) else Color(0xFF161B27)
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(bg)
-                                    .padding(horizontal = 10.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Part of speech pill
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1.1f)
-                                        .padding(end = 4.dp)
-                                ) {
-                                    val chipColor = when {
-                                        row.partOfSpeech.contains("Noun", ignoreCase = true) -> Color(0xFF38BDF8)
-                                        row.partOfSpeech.contains("Verb", ignoreCase = true) -> Color(0xFFF59E0B)
-                                        row.partOfSpeech.contains("Adj", ignoreCase = true) -> Color(0xFFA78BFA)
-                                        else -> Color(0xFF34D399)
-                                    }
-                                    Text(
-                                        text = row.partOfSpeech,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = chipColor
-                                    )
-                                }
-
-                                // Original Term & Transliteration
-                                Column(modifier = Modifier.weight(1.3f).padding(end = 4.dp)) {
-                                    Text(
-                                        text = row.originalTerm,
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFC9A84C),
-                                        fontFamily = FontFamily.Serif
-                                    )
-                                    Text(
-                                        text = row.transliteration,
-                                        fontSize = 10.sp,
-                                        fontStyle = FontStyle.Italic,
-                                        color = Color(0xFF8B949E)
-                                    )
-                                }
-
-                                // English Translation
-                                Text(
-                                    text = row.englishTranslation,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color(0xFFF0F6FC),
-                                    modifier = Modifier.weight(1.6f),
-                                    lineHeight = 15.sp
-                                )
-                            }
-                            if (index < philProfile.morphologicalRows.lastIndex) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(0.5.dp)
-                                        .background(Color(0xFF21262D))
-                                )
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Raw Markdown Table View with Copy Action
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF0D1117), shape = RoundedCornerShape(8.dp))
-                        .border(1.dp, Color(0xFF30363D), shape = RoundedCornerShape(8.dp))
-                        .padding(12.dp)
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "RAW MARKDOWN COMPARATIVE TABLE",
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF8B949E),
-                                letterSpacing = 0.8.sp
-                            )
-                            IconButton(
-                                onClick = {
-                                    clipboardManager.setText(AnnotatedString(markdownTable))
-                                    Toast.makeText(context, "Markdown table copied to clipboard", Toast.LENGTH_SHORT).show()
-                                },
-                                modifier = Modifier.size(28.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Share,
-                                    contentDescription = "Copy Markdown",
-                                    tint = Color(0xFF8B949E),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = markdownTable,
-                            fontSize = 11.sp,
-                            fontFamily = FontFamily.Monospace,
-                            color = Color(0xFF7EE787),
-                            lineHeight = 16.sp
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 3. The Translation Disconnect Highlight Card
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF1F1B12), shape = RoundedCornerShape(8.dp))
-                    .border(1.dp, Color(0xFFC9A84C).copy(alpha = 0.4f), shape = RoundedCornerShape(8.dp))
-                    .padding(14.dp)
-            ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Outlined.Info,
-                            contentDescription = "Translation Disconnect",
-                            tint = Color(0xFFC9A84C),
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "THE \"TRANSLATION DISCONNECT\" HIGHLIGHT",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFC9A84C),
-                            letterSpacing = 1.sp,
-                            fontFamily = FontFamily.Serif
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Hidden Linguistic Paradox & Ancient Mindset Restored",
-                        fontSize = 10.sp,
-                        color = Color(0xFF8B949E)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = philProfile.translationDisconnect,
-                        fontSize = 13.sp,
-                        lineHeight = 19.sp,
-                        color = Color(0xFFF0F6FC),
-                        fontFamily = FontFamily.Serif
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun WordStudyDetailView(
     study: WordStudy,
     onToggleFavorite: () -> Unit,
@@ -1666,11 +1279,6 @@ fun WordStudyDetailView(
                 )
             }
         }
-
-        // ==========================================
-        // 1.8 ORIGINAL LANGUAGE LEMMA PROFILE & COMPARATIVE MORPHOLOGICAL WORD FAMILY
-        // ==========================================
-        MorphologicalProfileCard(study = study)
 
         // ==========================================
         // 2. NEW TESTAMENT / OLD TESTAMENT CORE SIGNIFICANCE
@@ -3421,21 +3029,21 @@ fun WordStudyChatView(
                             Icon(
                                 imageVector = Icons.Default.AutoAwesome,
                                 contentDescription = null,
-                                tint = Color(0xFFC9A84C),
+                                tint = Color(0xFF38BDF8),
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "EXPERT BIBLICAL PHILOLOGIST",
+                                text = "AI RESEARCH PARTNER",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFC9A84C),
+                                color = Color(0xFF38BDF8),
                                 letterSpacing = 1.sp
                             )
                         }
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = if (study != null) "Tracing Lemma: ${study.word.uppercase()} (${study.transliteration})" else "Koine Greek & Biblical Hebrew Etymology",
+                            text = if (study != null) "Studying: ${study.word.uppercase()} (${study.transliteration})" else "Biblical & Historical Inquiry",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
@@ -3446,14 +3054,14 @@ fun WordStudyChatView(
                 
                 Box(
                     modifier = Modifier
-                        .background(Color(0xFFC9A84C).copy(alpha = 0.15f), shape = RoundedCornerShape(4.dp))
+                        .background(Color(0xFF38BDF8).copy(alpha = 0.15f), shape = RoundedCornerShape(4.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = if (study != null) {
-                            if (study.testament == "New Testament") "GREEK LEMMA" else "HEBREW LEMMA"
-                        } else "PHILOLOGY PROTOCOL",
-                        color = Color(0xFFC9A84C),
+                            if (study.testament == "New Testament") "GREEK" else "HEBREW"
+                        } else "SEARCH GROUNDED",
+                        color = Color(0xFF38BDF8),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )

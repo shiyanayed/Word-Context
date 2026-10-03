@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Outer Glow or Accent Ring -->
+    <path
+        android:pathData="M54,24 A30,30 0 1,1 53.9,24 Z"
+        android:strokeWidth="1.5"
+        android:strokeColor="#A67C52"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Open Book Symbol -->
+    <path
+        android:fillColor="#A67C52"
+        android:pathData="M54,42 L54,74 C51.5,72 45,70 38,70 C33,70 27,72.5 24,74 L24,45 C27,43.5 33,41 38,41 C46,41 51.5,43.5 54,45 Z" />
+        
+    <path
+        android:fillColor="#CBB49C"
+        android:pathData="M54,42 L54,74 C56.5,72 63,70 70,70 C75,70 81,72.5 84,74 L84,45 C81,43.5 75,41 70,41 C62,41 56.5,43.5 54,45 Z" />
+
+    <!-- Book Spine/Center line -->
+    <path
+        android:strokeWidth="1.5"
+        android:strokeColor="#2A2723"
+        android:pathData="M54,41 L54,75" />
+
+    <!-- Sparkle/Aura of Insight -->
+    <path
+        android:fillColor="#FDFCF9"
+        android:pathData="M54,30 L55.5,33.5 L59,35 L55.5,36.5 L54,40 L52.5,36.5 L49,35 L52.5,33.5 Z" />
+</vector>

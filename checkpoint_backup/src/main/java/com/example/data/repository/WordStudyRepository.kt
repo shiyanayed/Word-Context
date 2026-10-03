@@ -2,7 +2,6 @@ package com.example.data.repository
 
 import com.example.BuildConfig
 import com.example.data.local.CuratedWordStudies
-import com.example.data.local.PhilologyFamilyHelper
 import com.example.data.local.WordStudyDao
 import com.example.data.model.WordStudy
 import com.example.data.verification.GroundingSource
@@ -93,19 +92,9 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
 
         // 3. For any custom biblical terms not in curated library, query the configured AI provider
         val systemInstruction = """
-            You are an expert biblical philologist, etymologist, and lexicographer specialized in Koine Greek and Biblical Hebrew. Your primary task is to analyze English theological words by tracing them back to their original language lemmas (root words/word families).
-
-            Whenever the user inputs an English or transliterated biblical word, you must strictly adhere to the following analytical protocol:
-
-            1. MORPHOLOGICAL WORD FAMILIES: Immediately identify the underlying Hebrew or Greek root lemma. You must check if the English word requested belongs to a larger linguistic family in the original language that English translations split into completely different words (e.g., Righteousness [Noun] and Justification [Verb] from 'dike'; or Holy [Adj] and Sanctification [Noun] from 'hagios').
-
-            2. CO-PRESENTATION REQUIREMENT: If the requested word is part of such a split-translation family, you are strictly forbidden from presenting the word in isolation. You must bring out the related nouns, verbs, adjectives, and adverbs together in a single, unified profile.
-
-            3. THE "TRANSLATION DISCONNECT" HIGHLIGHT: Explicitly point out any hidden linguistic paradoxes or "wows" created by this disconnect. Explain how the Western/English theological understanding differs from the original Hebraic or Greek mindset because of these split translations.
-
-            4. FORMAT WITH COMPARATIVE TABLES: Always use a markdown table to map out the Noun, Verb, and Adjective forms of the original Greek/Hebrew root, showing their corresponding English translations so the user can visually track the structural connection instantly.
-
-            You MUST provide as much details as possible when giving the historical, linguistic, and cultural background of words. Do not summarize or abbreviate.
+            You are a world-class Biblical scholar and linguist expert in first-century history, ancient languages (Greek, Hebrew, Aramaic), Roman law, Jewish law (Torah/Talmudic jurisprudence), and Greco-Roman cultural history.
+            Your task is to provide a deep, scholarly, and historically accurate word study of the Bible word provided.
+            You MUST provide as much details as possible when giving the historical and cultural background of words. Do not summarize, abbreviate, or generalize; instead, go into exhaustive depth regarding the historical setting, cultural norms, and era-specific societal frameworks.
             You MUST return your response as a single, strictly valid JSON object.
             Do not enclose the JSON in markdown code blocks like ```json ... ```. Just return the raw JSON text.
             The JSON object must have exactly these keys:
@@ -115,9 +104,6 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
             - "transliteration": String (e.g. "huiothesia" or "chesed")
             - "strongsNumber": String (e.g. "G5206" or "H2617")
             - "literalMeaning": String (e.g. "placement as a son" or "unfailing covenant love")
-            - "rootLemma": String (the root lemma in original script and transliteration, e.g. "δίκη (dikē)" or "קָדַשׁ (qadash)")
-            - "morphologicalFamilyTable": String (markdown table mapping Part of Speech, Original Greek/Hebrew Term, Transliteration, and English Translation, showing Noun, Verb, Adjective, and Adverb forms together)
-            - "translationDisconnect": String (exhaustive explanation of the translation disconnect, highlighting the hidden linguistic paradox or 'wow' of how Western/English translations split one unified root into separate concepts, and how the original mindset differs)
             - "thenMeaning": String (what it meant THEN in its original first-century Roman/Jewish historical/legal/cultural context. Go into rich, highly educational detail, explaining the background exhaustively.)
             - "nowMeaning": String (what modern readers often think it means NOW, highlighting modern misunderstandings or shallow theological interpretations)
             - "historicalBackground": String (the historical situation, audience, and era-specific dynamics of the word. Give as much historical details as possible, including names, dates, events, empires, and political contexts.)
@@ -354,29 +340,11 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
                 "${it.title} | ${it.domain} [${it.trustTier.label} - ${it.trustScore}% Trust]"
             }
 
-            val philProfile = PhilologyFamilyHelper.getPhilologicalProfile(
-                word = cleanedWord,
-                originalWord = parsedStudy.originalWord,
-                transliteration = parsedStudy.transliteration,
-                testament = cleanedTestament,
-                customRootLemma = parsedStudy.rootLemma,
-                customTable = parsedStudy.morphologicalFamilyTable,
-                customDisconnect = parsedStudy.translationDisconnect
-            )
-            val resolvedRootLemma = parsedStudy.rootLemma.ifBlank { philProfile.rootLemma }
-            val resolvedTable = parsedStudy.morphologicalFamilyTable.ifBlank {
-                PhilologyFamilyHelper.buildMarkdownTable(philProfile.morphologicalRows)
-            }
-            val resolvedDisconnect = parsedStudy.translationDisconnect.ifBlank { philProfile.translationDisconnect }
-
             val wordStudyToSave = parsedStudy.copy(
                 word = cleanedWord,
                 testament = cleanedTestament,
                 timestamp = System.currentTimeMillis(),
-                searchGroundingSources = verifiedSourceStrings,
-                rootLemma = resolvedRootLemma,
-                morphologicalFamilyTable = resolvedTable,
-                translationDisconnect = resolvedDisconnect
+                searchGroundingSources = verifiedSourceStrings
             )
             val id = wordStudyDao.insertWordStudy(wordStudyToSave)
             return@withContext wordStudyToSave.copy(id = id)
@@ -393,29 +361,10 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
                 val verifiedSourceStrings = verifiedSources.map {
                     "${it.title} | ${it.domain} [${it.trustTier.label} - ${it.trustScore}% Trust]"
                 }
-
-                val fallbackProfile = PhilologyFamilyHelper.getPhilologicalProfile(
-                    word = cleanedWord,
-                    originalWord = fallback.originalWord,
-                    transliteration = fallback.transliteration,
-                    testament = cleanedTestament,
-                    customRootLemma = fallback.rootLemma,
-                    customTable = fallback.morphologicalFamilyTable,
-                    customDisconnect = fallback.translationDisconnect
-                )
-                val fallbackRootLemma = fallback.rootLemma.ifBlank { fallbackProfile.rootLemma }
-                val fallbackTable = fallback.morphologicalFamilyTable.ifBlank {
-                    PhilologyFamilyHelper.buildMarkdownTable(fallbackProfile.morphologicalRows)
-                }
-                val fallbackDisconnect = fallback.translationDisconnect.ifBlank { fallbackProfile.translationDisconnect }
-
                 val toSave = fallback.copy(
                     word = cleanedWord.lowercase(),
                     timestamp = System.currentTimeMillis(),
-                    searchGroundingSources = verifiedSourceStrings,
-                    rootLemma = fallbackRootLemma,
-                    morphologicalFamilyTable = fallbackTable,
-                    translationDisconnect = fallbackDisconnect
+                    searchGroundingSources = verifiedSourceStrings
                 )
                 val id = wordStudyDao.insertWordStudy(toSave)
                 return@withContext toSave.copy(id = id)
@@ -462,31 +411,22 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
             """.trimIndent()
 
             """
-                You are an expert biblical philologist, etymologist, and lexicographer specialized in Koine Greek and Biblical Hebrew. Your primary task is to analyze English theological words by tracing them back to their original language lemmas (root words/word families).
+                You are a world-class Biblical scholar and linguist expert in first-century history, ancient languages (Greek, Hebrew, Aramaic), Roman law, Jewish law, and Greco-Roman cultural history.
                 You are helping the user study the biblical word '$word' ($originalWord).
-
-                Whenever analyzing a word or answering the user's questions, you must strictly adhere to the following analytical protocol:
-                1. MORPHOLOGICAL WORD FAMILIES: Immediately identify the underlying Hebrew or Greek root lemma. You must check if the English word requested belongs to a larger linguistic family in the original language that English translations split into completely different words (e.g., Righteousness [Noun] and Justification [Verb] from 'dike'; or Holy [Adj] and Sanctification [Noun] from 'hagios').
-                2. CO-PRESENTATION REQUIREMENT: If the requested word is part of such a split-translation family, you are strictly forbidden from presenting the word in isolation. You must bring out the related nouns, verbs, adjectives, and adverbs together in a single, unified profile.
-                3. THE "TRANSLATION DISCONNECT" HIGHLIGHT: Explicitly point out any hidden linguistic paradoxes or "wows" created by this disconnect. Explain how the Western/English theological understanding differs from the original Hebraic or Greek mindset because of these split translations.
-                4. FORMAT WITH COMPARATIVE TABLES: Always use a markdown table to map out the Noun, Verb, and Adjective forms of the original Greek/Hebrew root, showing their corresponding English translations so the user can visually track the structural connection instantly.
-
-                Answer in rich, scholarly, and exhaustive detail. Utilize real-time Google search data to cite verified historical records, ancient inscriptions, and peer-reviewed consensus.
+                Answer the user's questions about this word, its context, scriptures, or background in high, scholarly detail.
+                You MUST give as much details as possible when giving the historical and cultural background of words. Do not summarize or abbreviate; go into exhaustive, deep historical and cultural detail.
+                Utilize real-time Google search data to cite verified historical records, archaeological artifacts, and ancient inscriptions.
+                Format key points with clear structure and markdown bullet points.
 
                 Study Context:
                 $contextStr
             """.trimIndent()
         } else {
             """
-                You are an expert biblical philologist, etymologist, and lexicographer specialized in Koine Greek and Biblical Hebrew. Your primary task is to analyze English theological words by tracing them back to their original language lemmas (root words/word families).
-
-                Whenever the user inputs an English or transliterated biblical word, you must strictly adhere to the following analytical protocol:
-                1. MORPHOLOGICAL WORD FAMILIES: Immediately identify the underlying Hebrew or Greek root lemma. You must check if the English word requested belongs to a larger linguistic family in the original language that English translations split into completely different words (e.g., Righteousness [Noun] and Justification [Verb] from 'dike'; or Holy [Adj] and Sanctification [Noun] from 'hagios').
-                2. CO-PRESENTATION REQUIREMENT: If the requested word is part of such a split-translation family, you are strictly forbidden from presenting the word in isolation. You must bring out the related nouns, verbs, adjectives, and adverbs together in a single, unified profile.
-                3. THE "TRANSLATION DISCONNECT" HIGHLIGHT: Explicitly point out any hidden linguistic paradoxes or "wows" created by this disconnect. Explain how the Western/English theological understanding differs from the original Hebraic or Greek mindset because of these split translations.
-                4. FORMAT WITH COMPARATIVE TABLES: Always use a markdown table to map out the Noun, Verb, and Adjective forms of the original Greek/Hebrew root, showing their corresponding English translations so the user can visually track the structural connection instantly.
-
-                Answer the user's questions in deep, exhaustive scholarly detail with structured markdown headers, bold terms, and comparative tables.
+                You are a world-class Biblical scholar, ancient historian, and linguist expert in first-century Roman history, ancient Near Eastern history, Greek, Hebrew, Aramaic, Roman legal codices, and Jewish jurisprudence.
+                Answer the user's questions regarding biblical scriptures, ancient cultural practices, linguistic roots, theology, archaeology, and historical events in deep, exhaustive scholarly detail.
+                Utilize real-time Google search data to verify inscriptions, recent archaeological discoveries, historical dates, and academic consensus.
+                Format your responses with clear markdown headers, bold terms, and structured bullet points.
             """.trimIndent()
         }
 

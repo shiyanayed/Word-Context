@@ -40,53 +40,23 @@ object CuratedWordStudies {
         }
 
         return study?.let {
-            val withSources = if (it.searchGroundingSources.isEmpty()) {
+            if (it.searchGroundingSources.isEmpty()) {
                 val authentic = com.example.data.verification.SourceTrustVerifier.getCuratedAuthenticSources(it.word)
                     .map { s -> "${s.title} | ${s.domain} [Trust: ${s.trustScore}%]" }
                 it.copy(searchGroundingSources = authentic)
             } else {
                 it
             }
-            if (withSources.rootLemma.isBlank()) {
-                val prof = PhilologyFamilyHelper.getPhilologicalProfile(
-                    word = withSources.word,
-                    originalWord = withSources.originalWord,
-                    transliteration = withSources.transliteration,
-                    testament = withSources.testament
-                )
-                withSources.copy(
-                    rootLemma = prof.rootLemma,
-                    morphologicalFamilyTable = PhilologyFamilyHelper.buildMarkdownTable(prof.morphologicalRows),
-                    translationDisconnect = prof.translationDisconnect
-                )
-            } else {
-                withSources
-            }
         }
     }
 
     fun getAllCuratedStudies(): List<WordStudy> = allCuratedMap.values.map { study ->
-        val withSources = if (study.searchGroundingSources.isEmpty()) {
+        if (study.searchGroundingSources.isEmpty()) {
             val authentic = com.example.data.verification.SourceTrustVerifier.getCuratedAuthenticSources(study.word)
                 .map { "${it.title} | ${it.domain} [Trust: ${it.trustScore}%]" }
             study.copy(searchGroundingSources = authentic)
         } else {
             study
-        }
-        if (withSources.rootLemma.isBlank()) {
-            val prof = PhilologyFamilyHelper.getPhilologicalProfile(
-                word = withSources.word,
-                originalWord = withSources.originalWord,
-                transliteration = withSources.transliteration,
-                testament = withSources.testament
-            )
-            withSources.copy(
-                rootLemma = prof.rootLemma,
-                morphologicalFamilyTable = PhilologyFamilyHelper.buildMarkdownTable(prof.morphologicalRows),
-                translationDisconnect = prof.translationDisconnect
-            )
-        } else {
-            withSources
         }
     }
 

@@ -26,8 +26,5 @@ data class WordStudy(
     val closingInsight: String,
     val timestamp: Long = System.currentTimeMillis(),
     val isFavorite: Boolean = false,
-    val searchGroundingSources: List<String> = emptyList(),
-    val rootLemma: String = "",
-    val morphologicalFamilyTable: String = "",
-    val translationDisconnect: String = ""
+    val searchGroundingSources: List<String> = emptyList()
 )
