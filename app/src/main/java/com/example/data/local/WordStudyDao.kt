@@ -17,11 +17,20 @@ interface WordStudyDao {
     @Query("SELECT * FROM word_studies WHERE isFavorite = 1 ORDER BY timestamp DESC")
     fun getFavoriteWordStudies(): Flow<List<WordStudy>>
 
-    @Query("SELECT * FROM word_studies WHERE LOWER(word) = LOWER(:word) AND LOWER(testament) = LOWER(:testament) LIMIT 1")
+    @Query("SELECT * FROM word_studies WHERE (LOWER(word) = LOWER(:word) OR LOWER(transliteration) = LOWER(:word) OR originalWord = :word) AND LOWER(testament) = LOWER(:testament) LIMIT 1")
     suspend fun getWordStudyByWordAndTestament(word: String, testament: String): WordStudy?
+
+    @Query("SELECT * FROM word_studies WHERE LOWER(word) = LOWER(:word) OR LOWER(transliteration) = LOWER(:word) OR originalWord = :word LIMIT 1")
+    suspend fun getWordStudyAnyTestament(word: String): WordStudy?
+
+    @Query("SELECT COUNT(*) FROM word_studies")
+    suspend fun getCount(): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWordStudy(wordStudy: WordStudy): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(wordStudies: List<WordStudy>): List<Long>
 
     @Update
     suspend fun updateWordStudy(wordStudy: WordStudy)

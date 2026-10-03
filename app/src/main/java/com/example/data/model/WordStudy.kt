@@ -25,5 +25,6 @@ data class WordStudy(
     val keyScriptures: List<String>,
     val closingInsight: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val searchGroundingSources: List<String> = emptyList()
 )
