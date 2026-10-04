@@ -70,9 +70,12 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
         val cleanedWord = word.trim()
         val cleanedTestament = testament.trim()
 
-        // 1. Check database cache first
-        val cached = wordStudyDao.getWordStudyByWordAndTestament(cleanedWord, cleanedTestament)
-            ?: wordStudyDao.getWordStudyAnyTestament(cleanedWord)
+        // 1. Check database cache first - strictly isolate by testament if specified
+        val cached = if (cleanedTestament.isNotBlank()) {
+            wordStudyDao.getWordStudyByWordAndTestament(cleanedWord, cleanedTestament)
+        } else {
+            wordStudyDao.getWordStudyAnyTestament(cleanedWord)
+        }
 
         if (cached != null) {
             val updated = cached.copy(timestamp = System.currentTimeMillis())
@@ -80,9 +83,9 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
             return@withContext updated
         }
 
-        // 2. Check curated scholarly database (e.g. euaggelion, grace, adoption, redemption, faith, etc.)
+        // 2. Check curated scholarly database matching the requested testament
         val curated = CuratedWordStudies.getCuratedStudy(cleanedWord, cleanedTestament)
-        if (curated != null) {
+        if (curated != null && (cleanedTestament.isBlank() || curated.testament.equals(cleanedTestament, ignoreCase = true))) {
             val toSave = curated.copy(
                 word = if (cleanedWord.isNotBlank()) cleanedWord.lowercase() else curated.word,
                 timestamp = System.currentTimeMillis()
@@ -95,9 +98,14 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
         val systemInstruction = """
             You are an expert biblical philologist, etymologist, and lexicographer specialized in Koine Greek and Biblical Hebrew. Your primary task is to analyze English theological words by tracing them back to their original language lemmas (root words/word families).
 
+            CRITICAL TESTAMENT MANDATE:
+            You MUST analyze the word strictly within the requested testament.
+            - If "New Testament" is requested, you MUST provide the Koine Greek root lemma (with Strong's G-number) and first-century Greco-Roman historical/legal background. You must NOT provide Hebrew.
+            - If "Old Testament" is requested, you MUST provide the Biblical Hebrew/Aramaic root lemma (with Strong's H-number) and ancient Near Eastern covenantal/legal background. You must NOT provide Greek.
+
             Whenever the user inputs an English or transliterated biblical word, you must strictly adhere to the following analytical protocol:
 
-            1. MORPHOLOGICAL WORD FAMILIES: Immediately identify the underlying Hebrew or Greek root lemma. You must check if the English word requested belongs to a larger linguistic family in the original language that English translations split into completely different words (e.g., Righteousness [Noun] and Justification [Verb] from 'dike'; or Holy [Adj] and Sanctification [Noun] from 'hagios').
+            1. MORPHOLOGICAL WORD FAMILIES: Immediately identify the underlying Hebrew or Greek root lemma for the specified testament. You must check if the English word requested belongs to a larger linguistic family in the original language that English translations split into completely different words (e.g., in NT: Righteousness [Noun] and Justification [Verb] from 'dike'; or Holy [Adj] and Sanctification [Noun] from 'hagios'; in OT: Righteousness [Noun] and Justified [Verb] from 'tsadaq').
 
             2. CO-PRESENTATION REQUIREMENT: If the requested word is part of such a split-translation family, you are strictly forbidden from presenting the word in isolation. You must bring out the related nouns, verbs, adjectives, and adverbs together in a single, unified profile.
 
@@ -129,7 +137,13 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
             - "searchGroundingSources": Array of Strings (2-3 primary historical/epigraphic inscriptions, classical authors like Tacitus/Josephus, or peer-reviewed monographs supporting this study)
         """.trimIndent()
 
-        val promptText = "Provide a Bible word study for the word: '$cleanedWord' under the context of: '$cleanedTestament'."
+        val promptText = "Provide an in-depth Bible word study for the word: '$cleanedWord'.\n" +
+            "CRITICAL TESTAMENT SCOPE: You MUST analyze this term specifically in the context of the '$cleanedTestament'.\n" +
+            (if (cleanedTestament.contains("New", ignoreCase = true)) {
+                "Since this is the NEW TESTAMENT, focus strictly on the original KOINE GREEK root lemma (with Strong's G-number), Greek morphological inflections, and first-century Greco-Roman historical/legal background. Do NOT give the Hebrew Old Testament lemma."
+            } else {
+                "Since this is the OLD TESTAMENT, focus strictly on the original BIBLICAL HEBREW (or Aramaic) root lemma (with Strong's H-number), Hebrew morphological inflections, and ancient Near Eastern covenantal/legal background. Do NOT give the Greek New Testament lemma."
+            })
 
         try {
             val rawJsonText = when (activeProvider) {

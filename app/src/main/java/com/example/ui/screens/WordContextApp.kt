@@ -2,7 +2,9 @@
 package com.example.ui.screens
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,8 +28,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -671,10 +677,21 @@ fun WordContextApp(
         }
     }
 
+    BackHandler(enabled = isChatOpen) {
+        isChatOpen = false
+    }
+
     AnimatedVisibility(
         visible = isChatOpen,
-        enter = slideInVertically(initialOffsetY = { it }, animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
-        exit = slideOutVertically(targetOffsetY = { it }, animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
+        modifier = Modifier.fillMaxSize(),
+        enter = slideInVertically(
+            initialOffsetY = { it },
+            animationSpec = tween(durationMillis = 280)
+        ) + fadeIn(animationSpec = tween(280)),
+        exit = slideOutVertically(
+            targetOffsetY = { it },
+            animationSpec = tween(durationMillis = 240)
+        ) + fadeOut(animationSpec = tween(240))
     ) {
         val activeStudy = viewingStudy ?: (searchUiState as? SearchUiState.Success)?.wordStudy
         WordStudyChatView(
@@ -687,6 +704,7 @@ fun WordContextApp(
             strictVerification = strictVerification,
             onToggleStrictVerification = { viewModel.toggleStrictVerification(it) },
             onSendMessage = { viewModel.sendChatMessage(it, activeStudy) },
+            onResetChat = { viewModel.resetChat() },
             onClose = { isChatOpen = false }
         )
     }
@@ -3361,6 +3379,190 @@ fun SettingsTab(
     }
 }
 
+@Composable
+fun PhilologicalChatBubbleText(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    val lines = remember(text) { text.lines() }
+    val contentBlocks = remember(text) {
+        val blocks = mutableListOf<Pair<Boolean, String>>() // true = isTable, false = isText
+        val tableLines = mutableListOf<String>()
+        var inTable = false
+        val currentText = StringBuilder()
+
+        for (line in lines) {
+            val trimmed = line.trim()
+            if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+                if (!inTable) {
+                    if (currentText.isNotBlank()) {
+                        blocks.add(false to currentText.toString().trim())
+                        currentText.clear()
+                    }
+                    inTable = true
+                }
+                tableLines.add(line)
+            } else {
+                if (inTable) {
+                    if (tableLines.size >= 3) {
+                        blocks.add(true to tableLines.joinToString("\n"))
+                    } else {
+                        currentText.append(tableLines.joinToString("\n")).append("\n")
+                    }
+                    tableLines.clear()
+                    inTable = false
+                }
+                currentText.append(line).append("\n")
+            }
+        }
+        if (inTable && tableLines.size >= 3) {
+            blocks.add(true to tableLines.joinToString("\n"))
+        } else if (currentText.isNotBlank()) {
+            blocks.add(false to currentText.toString().trim())
+        }
+        blocks
+    }
+
+    if (contentBlocks.isEmpty()) {
+        Text(
+            text = text,
+            color = Color(0xFFF0F6FC),
+            fontSize = 14.5.sp,
+            lineHeight = 22.sp,
+            fontFamily = FontFamily.Serif,
+            modifier = modifier
+        )
+        return
+    }
+
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        contentBlocks.forEach { (isTable, block) ->
+            if (isTable) {
+                val parsedRows = remember(block) { PhilologyFamilyHelper.parseMarkdownTable(block) }
+                if (parsedRows.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(1.dp, Color(0xFF30363D), RoundedCornerShape(8.dp))
+                            .horizontalScroll(rememberScrollState())
+                    ) {
+                        Column {
+                            // Table header row
+                            Row(
+                                modifier = Modifier
+                                    .background(Color(0xFF21262D))
+                                    .padding(horizontal = 10.dp, vertical = 7.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "PART OF SPEECH",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF8B949E),
+                                    modifier = Modifier.width(115.dp)
+                                )
+                                Text(
+                                    text = "ORIGINAL TERM",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF8B949E),
+                                    modifier = Modifier.width(115.dp)
+                                )
+                                Text(
+                                    text = "TRANSLITERATION",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF8B949E),
+                                    modifier = Modifier.width(115.dp)
+                                )
+                                Text(
+                                    text = "ENGLISH TRANSLATION",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF8B949E),
+                                    modifier = Modifier.width(140.dp)
+                                )
+                            }
+
+                            // Data rows
+                            parsedRows.forEachIndexed { idx, row ->
+                                val rowBg = if (idx % 2 == 0) Color(0xFF0D1117) else Color(0xFF161B27)
+                                Row(
+                                    modifier = Modifier
+                                        .background(rowBg)
+                                        .padding(horizontal = 10.dp, vertical = 7.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    val chipColor = when {
+                                        row.partOfSpeech.contains("Noun", ignoreCase = true) -> Color(0xFF38BDF8)
+                                        row.partOfSpeech.contains("Verb", ignoreCase = true) -> Color(0xFFF59E0B)
+                                        row.partOfSpeech.contains("Adj", ignoreCase = true) -> Color(0xFFA78BFA)
+                                        else -> Color(0xFF34D399)
+                                    }
+                                    Text(
+                                        text = row.partOfSpeech,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = chipColor,
+                                        modifier = Modifier.width(115.dp)
+                                    )
+                                    Text(
+                                        text = row.originalTerm,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFC9A84C),
+                                        fontFamily = FontFamily.Serif,
+                                        modifier = Modifier.width(115.dp)
+                                    )
+                                    Text(
+                                        text = row.transliteration,
+                                        fontSize = 10.5.sp,
+                                        fontStyle = FontStyle.Italic,
+                                        color = Color(0xFF8B949E),
+                                        modifier = Modifier.width(115.dp)
+                                    )
+                                    Text(
+                                        text = row.englishTranslation,
+                                        fontSize = 11.5.sp,
+                                        color = Color(0xFFF0F6FC),
+                                        lineHeight = 15.sp,
+                                        modifier = Modifier.width(140.dp)
+                                    )
+                                }
+                                if (idx < parsedRows.lastIndex) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(0.5.dp)
+                                            .background(Color(0xFF21262D))
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Text(
+                        text = block,
+                        color = Color(0xFFF0F6FC),
+                        fontSize = 14.5.sp,
+                        lineHeight = 22.sp,
+                        fontFamily = FontFamily.Serif
+                    )
+                }
+            } else {
+                Text(
+                    text = block,
+                    color = Color(0xFFF0F6FC),
+                    fontSize = 14.5.sp,
+                    lineHeight = 22.sp,
+                    fontFamily = FontFamily.Serif
+                )
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WordStudyChatView(
@@ -3373,100 +3575,56 @@ fun WordStudyChatView(
     strictVerification: Boolean = true,
     onToggleStrictVerification: (Boolean) -> Unit = {},
     onSendMessage: (String) -> Unit,
+    onResetChat: () -> Unit = {},
     onClose: () -> Unit
 ) {
     var textState by remember { mutableStateOf("") }
     var showChatMethodologyDialog by remember { mutableStateOf(false) }
     val lazyListState = rememberLazyListState()
     val uriHandler = LocalUriHandler.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+
+    BackHandler(enabled = true) {
+        onClose()
+    }
 
     LaunchedEffect(chatMessages.size, chatLoading) {
         if (chatMessages.isNotEmpty()) {
+            delay(120)
             lazyListState.animateScrollToItem(chatMessages.size - 1)
+        }
+    }
+
+    val sendMessageAction: () -> Unit = {
+        if (textState.trim().isNotEmpty() && !chatLoading) {
+            keyboardController?.hide()
+            focusManager.clearFocus()
+            onSendMessage(textState.trim())
+            textState = ""
         }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF080C14).copy(alpha = 0.98f))
+            .background(Color(0xFF080C14))
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Header Bar
+            // Clean, unobtrusive header bar focused on reading
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color(0xFF0D1117))
                     .border(width = 1.dp, color = Color(0xFF21262D))
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onClose) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.AutoAwesome,
-                                contentDescription = null,
-                                tint = Color(0xFFC9A84C),
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "EXPERT BIBLICAL PHILOLOGIST",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFC9A84C),
-                                letterSpacing = 1.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = if (study != null) "Tracing Lemma: ${study.word.uppercase()} (${study.transliteration})" else "Koine Greek & Biblical Hebrew Etymology",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            fontFamily = FontFamily.Serif
-                        )
-                    }
-                }
-                
-                Box(
-                    modifier = Modifier
-                        .background(Color(0xFFC9A84C).copy(alpha = 0.15f), shape = RoundedCornerShape(4.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = if (study != null) {
-                            if (study.testament == "New Testament") "GREEK LEMMA" else "HEBREW LEMMA"
-                        } else "PHILOLOGY PROTOCOL",
-                        color = Color(0xFFC9A84C),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            // Real-Time Search Grounding & Authenticity Gate Live Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF111827))
-                    .border(width = 1.dp, color = Color(0xFF1F293D))
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -3474,52 +3632,72 @@ fun WordStudyChatView(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Icon(
-                        imageVector = if (strictVerification) Icons.Default.VerifiedUser else Icons.Default.Search,
-                        contentDescription = null,
-                        tint = if (useSearchGrounding) Color(0xFF10B981) else Color(0xFF64748B),
-                        modifier = Modifier.size(13.dp)
-                    )
+                    IconButton(onClick = onClose, modifier = Modifier.size(36.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (useSearchGrounding) {
-                            if (strictVerification) "Verified Web Data (Authenticity Gate Active)" else "Web Data (Unfiltered Mode)"
-                        } else "Search Grounding (Offline Mode)",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (useSearchGrounding) Color(0xFF10B981) else Color(0xFF94A3B8)
-                    )
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = Color(0xFFC9A84C),
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "EXPERT BIBLICAL PHILOLOGIST",
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFC9A84C),
+                                letterSpacing = 0.8.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(1.dp))
+                        Text(
+                            text = if (study != null) "${study.word.uppercase()} (${study.transliteration})" else "Koine Greek & Biblical Hebrew",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            fontFamily = FontFamily.Serif,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .clickable { showChatMethodologyDialog = true }
-                            .background(Color(0xFF10B981).copy(alpha = 0.12f))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                // Sleek discrete action buttons: Info & Reset
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    IconButton(
+                        onClick = { showChatMethodologyDialog = true },
+                        modifier = Modifier.size(36.dp)
                     ) {
-                        Text(
-                            text = "🛡️ Audit Info",
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF10B981)
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "Grounding Settings & Info",
+                            tint = if (useSearchGrounding) Color(0xFF10B981) else Color(0xFF94A3B8),
+                            modifier = Modifier.size(19.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(6.dp))
-
-                    Switch(
-                        checked = useSearchGrounding,
-                        onCheckedChange = { onToggleSearchGrounding(it) },
-                        modifier = Modifier.scale(0.75f),
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(0xFF10B981),
-                            uncheckedThumbColor = Color(0xFF64748B),
-                            uncheckedTrackColor = Color(0xFF1E293B)
+                    IconButton(
+                        onClick = onResetChat,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Refresh,
+                            contentDescription = "Restart Chat",
+                            tint = Color(0xFF8B949E),
+                            modifier = Modifier.size(19.dp)
                         )
-                    )
+                    }
                 }
             }
 
@@ -3536,8 +3714,8 @@ fun WordStudyChatView(
                     },
                     title = {
                         Text(
-                            text = "Source Authenticity Engine",
-                            fontSize = 15.sp,
+                            text = "Search Grounding & Verification",
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
                             fontFamily = FontFamily.Serif
@@ -3545,11 +3723,50 @@ fun WordStudyChatView(
                     },
                     text = {
                         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                            // In-dialog toggle so it doesn't clutter chat screen
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFF1E293B).copy(alpha = 0.6f))
+                                    .border(1.dp, Color(0xFF334155), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                                    Text(
+                                        text = "Live Search Grounding",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                    Text(
+                                        text = if (useSearchGrounding) "Active: Cross-referencing live academic data" else "Offline: Scholarly lexicons & internal corpus only",
+                                        fontSize = 10.sp,
+                                        color = if (useSearchGrounding) Color(0xFF10B981) else Color(0xFF94A3B8)
+                                    )
+                                }
+                                Switch(
+                                    checked = useSearchGrounding,
+                                    onCheckedChange = { onToggleSearchGrounding(it) },
+                                    modifier = Modifier.scale(0.75f),
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color.White,
+                                        checkedTrackColor = Color(0xFF10B981),
+                                        uncheckedThumbColor = Color(0xFF64748B),
+                                        uncheckedTrackColor = Color(0xFF1E293B)
+                                    )
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
                             Text(
                                 text = "Every fact and citation retrieved by the AI is audited prior to presentation:",
-                                fontSize = 12.sp,
+                                fontSize = 11.5.sp,
                                 color = Color(0xFFCBD5E1),
-                                lineHeight = 17.sp
+                                lineHeight = 16.sp
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -3557,9 +3774,9 @@ fun WordStudyChatView(
                                         "• Academic University Presses (98-95%)\n" +
                                         "• Standard Scholarly Lexicons (96-93%)\n" +
                                         "• Auto-Exclusion Filter: User forums, blogs, and opinions are actively blocked to safeguard truthful outputs.",
-                                fontSize = 11.sp,
+                                fontSize = 10.5.sp,
                                 color = Color(0xFF94A3B8),
-                                lineHeight = 16.sp
+                                lineHeight = 15.sp
                             )
                         }
                     },
@@ -3571,19 +3788,18 @@ fun WordStudyChatView(
                 )
             }
 
-            // Message List
+            // Message List - Unobstructed reading area
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
             ) {
                 if (chatMessages.isEmpty()) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
-                            .padding(vertical = 24.dp),
+                            .padding(horizontal = 20.dp, vertical = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -3616,9 +3832,9 @@ fun WordStudyChatView(
                         
                         Text(
                             text = if (study != null) {
-                                "Query the AI assistant to explore deep legal, cultural, and historical contexts of '${study.word}'. Live Google Search Grounding accesses archaeological and academic consensus."
+                                "Query the AI philologist to explore original lemmas, morphological families, and theological nuances of '${study.word}'."
                             } else {
-                                "Ask any question about ancient Roman law, Near Eastern archaeology, Greek/Hebrew syntax, or biblical events. Connected to Google Search for real-time citations."
+                                "Ask any question about Greek/Hebrew root lemmas, ancient Roman law, Near Eastern archaeology, or comparative biblical words."
                             },
                             fontSize = 13.sp,
                             color = Color(0xFF8B949E),
@@ -3641,16 +3857,16 @@ fun WordStudyChatView(
                         
                         val suggestions = if (study != null) {
                             listOf(
-                                "What is the exhaustive historical and political setting of '${study.word}'?",
-                                "Can you explain the cultural honor/shame context surrounding this?",
-                                "How does Roman or Jewish law alter our theological understanding of this?",
-                                "What are other scriptures where this word's context is vital?"
+                                "What is the complete morphological word family of '${study.word}'?",
+                                "What translation disconnect exists between English and the original lemma?",
+                                "Can you map the noun, verb, and adjective forms in a comparative table?",
+                                "What is the exhaustive historical and legal setting of '${study.word}'?"
                             )
                         } else {
                             listOf(
-                                "What was the legal process and significance of Roman adoption (huiothesia)?",
-                                "What archaeological inscriptions verify the Roman census under Quirinius?",
-                                "Explain the honor/shame dynamic in ancient Greco-Roman assemblies (ekklesia).",
+                                "Explain the morphological word family of 'dikaiosyne' (Righteousness / Justification).",
+                                "What is the root lemma and translation disconnect of 'hagios' (Holy / Sanctify)?",
+                                "Map out the comparative forms of 'pistis' (Faith / Believe / Faithful).",
                                 "How did ancient Near Eastern covenant ceremonies differ from Roman contracts?"
                             )
                         }
@@ -3659,8 +3875,12 @@ fun WordStudyChatView(
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 6.dp)
-                                    .clickable { onSendMessage(suggestion) },
+                                    .padding(vertical = 5.dp)
+                                    .clickable {
+                                        keyboardController?.hide()
+                                        focusManager.clearFocus()
+                                        onSendMessage(suggestion)
+                                    },
                                 colors = CardDefaults.cardColors(containerColor = Color(0xFF161B22)),
                                 border = BorderStroke(1.dp, Color(0xFF21262D)),
                                 shape = RoundedCornerShape(10.dp)
@@ -3678,7 +3898,7 @@ fun WordStudyChatView(
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
                                         text = suggestion,
-                                        fontSize = 12.sp,
+                                        fontSize = 12.5.sp,
                                         color = Color(0xFFF0F6FC),
                                         fontFamily = FontFamily.Serif
                                     )
@@ -3689,9 +3909,16 @@ fun WordStudyChatView(
                 } else {
                     LazyColumn(
                         state = lazyListState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(vertical = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    keyboardController?.hide()
+                                    focusManager.clearFocus()
+                                }
+                            },
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 14.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         items(chatMessages) { message ->
                             val isUser = message.role == "user"
@@ -3699,36 +3926,18 @@ fun WordStudyChatView(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
                             ) {
-                                if (!isUser) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(32.dp)
-                                            .background(Color(0xFF38BDF8).copy(alpha = 0.15f), RoundedCornerShape(percent = 50))
-                                            .border(1.dp, Color(0xFF38BDF8).copy(alpha = 0.3f), RoundedCornerShape(percent = 50)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.AutoAwesome,
-                                            contentDescription = null,
-                                            tint = Color(0xFF38BDF8),
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                }
-                                
                                 if (isUser) {
                                     Box(
                                         modifier = Modifier
                                             .weight(1f, fill = false)
-                                            .widthIn(max = 290.dp)
+                                            .widthIn(max = 300.dp)
                                             .background(
                                                 color = Color(0xFF1D4ED8),
                                                 shape = RoundedCornerShape(
-                                                    topStart = 12.dp,
-                                                    topEnd = 12.dp,
-                                                    bottomStart = 12.dp,
-                                                    bottomEnd = 2.dp
+                                                    topStart = 14.dp,
+                                                    topEnd = 14.dp,
+                                                    bottomStart = 14.dp,
+                                                    bottomEnd = 3.dp
                                                 )
                                             )
                                             .padding(12.dp)
@@ -3744,7 +3953,7 @@ fun WordStudyChatView(
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Box(
                                         modifier = Modifier
-                                            .size(32.dp)
+                                            .size(30.dp)
                                             .background(Color(0xFF111827), RoundedCornerShape(percent = 50))
                                             .border(1.dp, Color(0xFF38BDF8).copy(alpha = 0.2f), RoundedCornerShape(percent = 50)),
                                         contentAlignment = Alignment.Center
@@ -3757,222 +3966,178 @@ fun WordStudyChatView(
                                         )
                                     }
                                 } else {
-                                    // AI Response with Google Search Grounding Badge and Sources
-                                    Column(
+                                    // AI Response Card - 100% focused on prominent, readable text & tables
+                                    var isSourcesExpanded by remember { mutableStateOf(false) }
+
+                                    Card(
                                         modifier = Modifier
-                                            .weight(1f, fill = false)
-                                            .widthIn(max = 320.dp)
+                                            .fillMaxWidth()
+                                            .widthIn(max = 640.dp),
+                                        colors = CardDefaults.cardColors(containerColor = Color(0xFF161B22)),
+                                        border = BorderStroke(1.dp, Color(0xFF21262D)),
+                                        shape = RoundedCornerShape(topStart = 4.dp, topEnd = 14.dp, bottomEnd = 14.dp, bottomStart = 14.dp)
                                     ) {
-                                        // Grounded Banner & Verification Badge
-                                        if (message.isGrounded || message.searchQueries.isNotEmpty() || message.sources.isNotEmpty()) {
-                                            Card(
+                                        Column {
+                                            // Top card banner with Philologist title & Copy action
+                                            Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .padding(bottom = 6.dp),
-                                                colors = CardDefaults.cardColors(containerColor = Color(0xFF0C1929)),
-                                                border = BorderStroke(1.dp, Color(0xFF10B981).copy(alpha = 0.5f)),
-                                                shape = RoundedCornerShape(8.dp)
+                                                    .background(Color(0xFF0D1117))
+                                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                Column(modifier = Modifier.padding(8.dp)) {
-                                                    Row(
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                                        modifier = Modifier.fillMaxWidth()
-                                                    ) {
-                                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                                            Icon(
-                                                                imageVector = Icons.Default.VerifiedUser,
-                                                                contentDescription = "Search Grounded & Verified",
-                                                                tint = Color(0xFF10B981),
-                                                                modifier = Modifier.size(13.dp)
-                                                            )
-                                                            Spacer(modifier = Modifier.width(4.dp))
-                                                            Text(
-                                                                text = "Verified Sources & Grounded",
-                                                                fontSize = 11.sp,
-                                                                fontWeight = FontWeight.Bold,
-                                                                color = Color(0xFF10B981)
-                                                            )
-                                                        }
-                                                        val trustScore = message.verification?.overallTrustScore ?: 96
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .background(Color(0xFF10B981).copy(alpha = 0.15f), RoundedCornerShape(3.dp))
-                                                                .border(0.5.dp, Color(0xFF10B981).copy(alpha = 0.4f), RoundedCornerShape(3.dp))
-                                                                .padding(horizontal = 5.dp, vertical = 1.dp)
-                                                        ) {
-                                                            Text(
-                                                                text = "$trustScore% TRUST SCORE",
-                                                                fontSize = 8.sp,
-                                                                fontWeight = FontWeight.Bold,
-                                                                color = Color(0xFF10B981),
-                                                                fontFamily = FontFamily.Monospace
-                                                            )
-                                                        }
-                                                    }
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.AutoAwesome,
+                                                        contentDescription = null,
+                                                        tint = Color(0xFFC9A84C),
+                                                        modifier = Modifier.size(12.dp)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(4.dp))
+                                                    Text(
+                                                        text = "✦ BIBLICAL PHILOLOGIST",
+                                                        fontSize = 10.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = Color(0xFFC9A84C),
+                                                        letterSpacing = 0.8.sp
+                                                    )
+                                                }
 
-                                                    // Excluded / Filtered low-trust source alert
-                                                    if ((message.verification?.filteredOutSourcesCount ?: 0) > 0) {
-                                                        Spacer(modifier = Modifier.height(4.dp))
-                                                        Text(
-                                                            text = "🛡️ Authenticity Filter: ${message.verification?.filteredOutSourcesCount} unverified forum/opinion citation(s) discarded for quality.",
-                                                            fontSize = 9.sp,
-                                                            color = Color(0xFF38BDF8),
-                                                            fontWeight = FontWeight.Medium
-                                                        )
-                                                    }
-
-                                                    if (message.searchQueries.isNotEmpty()) {
-                                                        Spacer(modifier = Modifier.height(4.dp))
-                                                        Row(
-                                                            modifier = Modifier.horizontalScroll(rememberScrollState()),
-                                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                                        ) {
-                                                            message.searchQueries.forEach { q ->
-                                                                Text(
-                                                                    text = "🔍 $q",
-                                                                    fontSize = 9.5.sp,
-                                                                    color = Color(0xFF94A3B8),
-                                                                    modifier = Modifier
-                                                                        .background(Color(0xFF1E293B), RoundedCornerShape(4.dp))
-                                                                        .padding(horizontal = 5.dp, vertical = 2.dp)
-                                                                )
-                                                            }
-                                                        }
-                                                    }
+                                                IconButton(
+                                                    onClick = {
+                                                        clipboardManager.setText(AnnotatedString(message.text))
+                                                        Toast.makeText(context, "Response copied to clipboard", Toast.LENGTH_SHORT).show()
+                                                    },
+                                                    modifier = Modifier.size(24.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Outlined.ContentCopy,
+                                                        contentDescription = "Copy response",
+                                                        tint = Color(0xFF8B949E),
+                                                        modifier = Modifier.size(14.dp)
+                                                    )
                                                 }
                                             }
-                                        }
 
-                                        // Main text
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .background(
-                                                    color = Color(0xFF161B22),
-                                                    shape = RoundedCornerShape(
-                                                        topStart = 12.dp,
-                                                        topEnd = 12.dp,
-                                                        bottomStart = 2.dp,
-                                                        bottomEnd = 12.dp
-                                                    )
-                                                )
-                                                .border(
-                                                    width = 1.dp,
-                                                    color = Color(0xFF21262D),
-                                                    shape = RoundedCornerShape(
-                                                        topStart = 12.dp,
-                                                        topEnd = 12.dp,
-                                                        bottomStart = 2.dp,
-                                                        bottomEnd = 12.dp
-                                                    )
-                                                )
-                                                .padding(12.dp)
-                                        ) {
-                                            Text(
-                                                text = message.text,
-                                                color = Color(0xFFF0F6FC),
-                                                fontSize = 13.5.sp,
-                                                lineHeight = 20.sp,
-                                                fontFamily = FontFamily.Serif
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(0.5.dp)
+                                                    .background(Color(0xFF21262D))
                                             )
-                                        }
 
-                                        // Web sources citations with Provenance and Trust Tiers
-                                        if (message.sources.isNotEmpty()) {
-                                            Spacer(modifier = Modifier.height(6.dp))
-                                            Card(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
-                                                border = BorderStroke(1.dp, Color(0xFF10B981).copy(alpha = 0.4f)),
-                                                shape = RoundedCornerShape(8.dp)
-                                            ) {
-                                                Column(modifier = Modifier.padding(8.dp)) {
-                                                    Row(
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                                        verticalAlignment = Alignment.CenterVertically
-                                                    ) {
+                                            // Main Response Text with Rich Table Rendering
+                                            PhilologicalChatBubbleText(
+                                                text = message.text,
+                                                modifier = Modifier.padding(14.dp)
+                                            )
+
+                                            // Unobtrusive Footer: Verification & Citations
+                                            if (message.isGrounded || message.sources.isNotEmpty()) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(0.5.dp)
+                                                        .background(Color(0xFF21262D))
+                                                )
+
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .background(Color(0xFF0F172A).copy(alpha = 0.5f))
+                                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    if (message.isGrounded) {
+                                                        val trustScore = message.verification?.overallTrustScore ?: 96
                                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                                             Icon(
                                                                 imageVector = Icons.Default.VerifiedUser,
-                                                                contentDescription = null,
+                                                                contentDescription = "Verified Grounded",
                                                                 tint = Color(0xFF10B981),
                                                                 modifier = Modifier.size(11.dp)
                                                             )
                                                             Spacer(modifier = Modifier.width(4.dp))
                                                             Text(
-                                                                text = "AUDITED SOURCES (${message.sources.size})",
-                                                                fontSize = 9.sp,
+                                                                text = "Verified Grounded ($trustScore% Trust)",
+                                                                fontSize = 9.5.sp,
                                                                 fontWeight = FontWeight.Bold,
-                                                                color = Color(0xFF10B981),
-                                                                letterSpacing = 0.5.sp
+                                                                color = Color(0xFF10B981)
                                                             )
                                                         }
+                                                    } else {
+                                                        Spacer(modifier = Modifier.width(1.dp))
+                                                    }
+
+                                                    if (message.sources.isNotEmpty()) {
                                                         Text(
-                                                            text = "Peer-Reviewed Consensus",
-                                                            fontSize = 8.sp,
-                                                            color = Color(0xFF94A3B8),
-                                                            fontWeight = FontWeight.SemiBold
+                                                            text = if (isSourcesExpanded) "Hide Sources ▲" else "${message.sources.size} Audited Sources ▼",
+                                                            fontSize = 9.5.sp,
+                                                            color = Color(0xFF38BDF8),
+                                                            fontWeight = FontWeight.SemiBold,
+                                                            modifier = Modifier
+                                                                .clip(RoundedCornerShape(4.dp))
+                                                                .clickable { isSourcesExpanded = !isSourcesExpanded }
+                                                                .padding(horizontal = 4.dp, vertical = 2.dp)
                                                         )
                                                     }
-                                                    Spacer(modifier = Modifier.height(6.dp))
-                                                    message.sources.forEach { source ->
-                                                        Column(
-                                                            modifier = Modifier
-                                                                .fillMaxWidth()
-                                                                .padding(vertical = 3.dp)
-                                                                .clip(RoundedCornerShape(6.dp))
-                                                                .clickable {
-                                                                    if (source.url.isNotBlank() && source.url.startsWith("http")) {
-                                                                        try { uriHandler.openUri(source.url) } catch (_: Exception) {}
+                                                }
+
+                                                // Expandable sources list (only visible if user taps to expand)
+                                                if (isSourcesExpanded && message.sources.isNotEmpty()) {
+                                                    Column(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .background(Color(0xFF0D131F))
+                                                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                                    ) {
+                                                        message.sources.forEach { source ->
+                                                            Column(
+                                                                modifier = Modifier
+                                                                    .fillMaxWidth()
+                                                                    .clip(RoundedCornerShape(6.dp))
+                                                                    .clickable {
+                                                                        if (source.url.isNotBlank() && source.url.startsWith("http")) {
+                                                                            try { uriHandler.openUri(source.url) } catch (_: Exception) {}
+                                                                        }
                                                                     }
-                                                                }
-                                                                .background(Color(0xFF1E293B).copy(alpha = 0.8f))
-                                                                .border(0.5.dp, Color(source.trustTier.badgeColorHex).copy(alpha = 0.35f), RoundedCornerShape(6.dp))
-                                                                .padding(horizontal = 8.dp, vertical = 6.dp)
-                                                        ) {
-                                                            Row(
-                                                                modifier = Modifier.fillMaxWidth(),
-                                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                                verticalAlignment = Alignment.CenterVertically
+                                                                    .background(Color(0xFF1E293B).copy(alpha = 0.7f))
+                                                                    .border(0.5.dp, Color(source.trustTier.badgeColorHex).copy(alpha = 0.35f), RoundedCornerShape(6.dp))
+                                                                    .padding(horizontal = 8.dp, vertical = 6.dp)
                                                             ) {
-                                                                Text(
-                                                                    text = source.title,
-                                                                    fontSize = 11.sp,
-                                                                    fontWeight = FontWeight.SemiBold,
-                                                                    color = Color(0xFF60A5FA),
-                                                                    maxLines = 1,
-                                                                    overflow = TextOverflow.Ellipsis,
-                                                                    modifier = Modifier.weight(1f)
-                                                                )
-                                                                Spacer(modifier = Modifier.width(6.dp))
-                                                                Box(
-                                                                    modifier = Modifier
-                                                                        .background(Color(source.trustTier.badgeColorHex).copy(alpha = 0.15f), RoundedCornerShape(3.dp))
-                                                                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                                                                Row(
+                                                                    modifier = Modifier.fillMaxWidth(),
+                                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                                    verticalAlignment = Alignment.CenterVertically
                                                                 ) {
                                                                     Text(
-                                                                        text = "${source.trustScore}%",
-                                                                        fontSize = 8.5.sp,
-                                                                        fontWeight = FontWeight.Bold,
-                                                                        color = Color(source.trustTier.badgeColorHex)
+                                                                        text = source.title,
+                                                                        fontSize = 11.sp,
+                                                                        fontWeight = FontWeight.SemiBold,
+                                                                        color = Color(0xFF60A5FA),
+                                                                        maxLines = 1,
+                                                                        overflow = TextOverflow.Ellipsis,
+                                                                        modifier = Modifier.weight(1f)
                                                                     )
+                                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                                    Box(
+                                                                        modifier = Modifier
+                                                                            .background(Color(source.trustTier.badgeColorHex).copy(alpha = 0.15f), RoundedCornerShape(3.dp))
+                                                                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                                                                    ) {
+                                                                        Text(
+                                                                            text = "${source.trustScore}%",
+                                                                            fontSize = 8.5.sp,
+                                                                            fontWeight = FontWeight.Bold,
+                                                                            color = Color(source.trustTier.badgeColorHex)
+                                                                        )
+                                                                    }
                                                                 }
-                                                            }
-                                                            Spacer(modifier = Modifier.height(2.dp))
-                                                            Row(
-                                                                modifier = Modifier.fillMaxWidth(),
-                                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                                verticalAlignment = Alignment.CenterVertically
-                                                            ) {
-                                                                Text(
-                                                                    text = source.trustTier.label,
-                                                                    fontSize = 8.5.sp,
-                                                                    fontWeight = FontWeight.Bold,
-                                                                    color = Color(source.trustTier.badgeColorHex)
-                                                                )
                                                                 if (source.domain.isNotBlank()) {
+                                                                    Spacer(modifier = Modifier.height(2.dp))
                                                                     Text(
                                                                         text = source.domain,
                                                                         fontSize = 8.5.sp,
@@ -3980,15 +4145,6 @@ fun WordStudyChatView(
                                                                         fontFamily = FontFamily.Monospace
                                                                     )
                                                                 }
-                                                            }
-                                                            if (source.verificationNote.isNotBlank()) {
-                                                                Spacer(modifier = Modifier.height(2.dp))
-                                                                Text(
-                                                                    text = source.verificationNote,
-                                                                    fontSize = 9.5.sp,
-                                                                    color = Color(0xFF94A3B8),
-                                                                    lineHeight = 13.sp
-                                                                )
                                                             }
                                                         }
                                                     }
@@ -4009,7 +4165,7 @@ fun WordStudyChatView(
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(32.dp)
+                                            .size(30.dp)
                                             .background(Color(0xFF38BDF8).copy(alpha = 0.15f), RoundedCornerShape(percent = 50))
                                             .border(1.dp, Color(0xFF38BDF8).copy(alpha = 0.3f), RoundedCornerShape(percent = 50)),
                                         contentAlignment = Alignment.Center
@@ -4025,20 +4181,20 @@ fun WordStudyChatView(
                                     Card(
                                         colors = CardDefaults.cardColors(containerColor = Color(0xFF161B22)),
                                         border = BorderStroke(1.dp, Color(0xFF21262D)),
-                                        shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomEnd = 12.dp, bottomStart = 2.dp)
+                                        shape = RoundedCornerShape(topStart = 4.dp, topEnd = 12.dp, bottomEnd = 12.dp, bottomStart = 12.dp)
                                     ) {
                                         Row(
                                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                                             verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             CircularProgressIndicator(
-                                                modifier = Modifier.size(12.dp),
+                                                modifier = Modifier.size(13.dp),
                                                 color = Color(0xFF38BDF8),
                                                 strokeWidth = 1.5.dp
                                             )
                                             Text(
-                                                text = if (useSearchGrounding) "Querying scholarly lexicons & Google Search Grounding..." else "Consulting scholarly lexicons...",
+                                                text = if (useSearchGrounding) "Analyzing root lemmas & Google Search citations..." else "Analyzing original Greek & Hebrew root lemmas...",
                                                 color = Color(0xFF8B949E),
                                                 fontSize = 12.sp,
                                                 fontStyle = FontStyle.Italic
@@ -4077,7 +4233,7 @@ fun WordStudyChatView(
                 }
             }
 
-            // Input Row
+            // Input Row - Dismisses keyboard on submit
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -4091,7 +4247,7 @@ fun WordStudyChatView(
                     onValueChange = { textState = it },
                     placeholder = {
                         Text(
-                            text = if (study != null) "Ask about '${study.word}'..." else "Ask any biblical or historical question...",
+                            text = if (study != null) "Ask philological question on '${study.word}'..." else "Ask about root lemmas or biblical context...",
                             color = Color(0xFF8B949E),
                             fontSize = 13.sp
                         )
@@ -4102,12 +4258,7 @@ fun WordStudyChatView(
                         imeAction = androidx.compose.ui.text.input.ImeAction.Send
                     ),
                     keyboardActions = androidx.compose.foundation.text.KeyboardActions(
-                        onSend = {
-                            if (textState.trim().isNotEmpty() && !chatLoading) {
-                                onSendMessage(textState)
-                                textState = ""
-                            }
-                        }
+                        onSend = { sendMessageAction() }
                     ),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFF080C14),
@@ -4123,12 +4274,7 @@ fun WordStudyChatView(
                 Spacer(modifier = Modifier.width(8.dp))
                 
                 IconButton(
-                    onClick = {
-                        if (textState.trim().isNotEmpty() && !chatLoading) {
-                            onSendMessage(textState)
-                            textState = ""
-                        }
-                    },
+                    onClick = { sendMessageAction() },
                     modifier = Modifier
                         .size(40.dp)
                         .background(

@@ -6,38 +6,73 @@ object CuratedWordStudies {
 
     fun getCuratedStudy(queryWord: String, preferredTestament: String = ""): WordStudy? {
         val clean = queryWord.lowercase().trim()
-        val lowerTestament = preferredTestament.lowercase().trim()
+        val isNt = preferredTestament.contains("new", ignoreCase = true)
+        val isOt = preferredTestament.contains("old", ignoreCase = true)
 
-        // 1. Direct or alias match
-        val matchedKey = when (clean) {
-            "euaggelion", "euangelion", "gospel", "good news" -> "euaggelion"
-            "grace", "charis" -> "grace"
-            "adoption", "huiothesia" -> "adoption"
-            "redemption", "apolytrosis" -> "redemption"
-            "faith", "pistis" -> "faith"
-            "agape", "love", "charity" -> "agape"
-            "logos", "the word" -> "logos"
-            "koinonia", "fellowship" -> "koinonia"
-            "ekklesia", "ecclesia", "church", "assembly" -> "ekklesia"
-            "covenant", "berit", "testament" -> "covenant"
-            "lovingkindness", "chesed", "hesed", "steadfast love", "unfailing love" -> "lovingkindness"
-            "redeemer", "goel", "kinsman" -> "redeemer"
-            "righteousness", "tsedakah", "zedakah", "justice" -> "righteousness"
-            "shalom", "peace", "wholeness" -> "shalom"
-            "kadosh", "holy", "holiness", "sanctified" -> "kadosh"
-            "shema", "hear", "listen", "obey" -> "shema"
-            else -> clean
+        val matchedKey = when {
+            isNt -> when (clean) {
+                "righteousness", "justice", "justification", "dikaiosyne", "dike" -> "dikaiosyne"
+                "peace", "reconciliation", "eirene" -> "eirene"
+                "covenant", "testament", "diatheke" -> "diatheke"
+                "holy", "holiness", "sanctification", "saints", "hagios" -> "hagios"
+                "faith", "belief", "pistis" -> "faith"
+                "grace", "charis", "favor" -> "grace"
+                "love", "agape", "charity" -> "agape"
+                "gospel", "good news", "euaggelion", "euangelion" -> "euaggelion"
+                "adoption", "huiothesia" -> "adoption"
+                "redemption", "apolytrosis" -> "redemption"
+                "church", "assembly", "ekklesia", "ecclesia" -> "ekklesia"
+                "fellowship", "partnership", "koinonia" -> "koinonia"
+                "word", "logos", "the word" -> "logos"
+                else -> clean
+            }
+            isOt -> when (clean) {
+                "righteousness", "justice", "tsedakah", "zedakah", "tsadaq" -> "righteousness"
+                "peace", "wholeness", "shalom" -> "shalom"
+                "covenant", "berit", "treaty" -> "covenant"
+                "holy", "holiness", "sanctified", "kadosh", "qadash" -> "kadosh"
+                "faith", "faithfulness", "emunah", "aman" -> "emunah"
+                "grace", "favor", "chen" -> "chen"
+                "lovingkindness", "chesed", "hesed", "steadfast love", "unfailing love" -> "lovingkindness"
+                "redeemer", "redemption", "goel", "kinsman" -> "redeemer"
+                "shema", "hear", "listen", "obey" -> "shema"
+                else -> clean
+            }
+            else -> when (clean) {
+                "euaggelion", "euangelion", "gospel", "good news" -> "euaggelion"
+                "grace", "charis" -> "grace"
+                "adoption", "huiothesia" -> "adoption"
+                "redemption", "apolytrosis" -> "redemption"
+                "faith", "pistis" -> "faith"
+                "agape", "love", "charity" -> "agape"
+                "logos", "the word" -> "logos"
+                "koinonia", "fellowship" -> "koinonia"
+                "ekklesia", "ecclesia", "church", "assembly" -> "ekklesia"
+                "covenant", "berit" -> "covenant"
+                "lovingkindness", "chesed", "hesed", "steadfast love", "unfailing love" -> "lovingkindness"
+                "redeemer", "goel", "kinsman" -> "redeemer"
+                "righteousness", "tsedakah", "zedakah" -> "righteousness"
+                "shalom", "peace", "wholeness" -> "shalom"
+                "kadosh", "holy", "holiness", "sanctified" -> "kadosh"
+                "shema", "hear", "listen", "obey" -> "shema"
+                else -> clean
+            }
         }
 
-        val all = allCuratedMap
-        // If matched key exists, return it
-        val study = all[matchedKey] ?: all.values.firstOrNull {
-            it.transliteration.equals(clean, ignoreCase = true) ||
-            it.originalWord.equals(clean, ignoreCase = true) ||
-            it.word.equals(clean, ignoreCase = true) ||
-            clean.contains(it.word, ignoreCase = true) ||
-            clean.contains(it.transliteration, ignoreCase = true)
+        val candidates = allCuratedList.filter { study ->
+            if (isNt && !study.testament.equals("New Testament", ignoreCase = true)) return@filter false
+            if (isOt && !study.testament.equals("Old Testament", ignoreCase = true)) return@filter false
+            true
         }
+
+        val study = candidates.firstOrNull { it.word.equals(matchedKey, ignoreCase = true) }
+            ?: candidates.firstOrNull {
+                it.transliteration.equals(clean, ignoreCase = true) ||
+                it.originalWord.equals(clean, ignoreCase = true) ||
+                it.word.equals(clean, ignoreCase = true) ||
+                clean.contains(it.word, ignoreCase = true) ||
+                clean.contains(it.transliteration, ignoreCase = true)
+            }
 
         return study?.let {
             val withSources = if (it.searchGroundingSources.isEmpty()) {
@@ -65,7 +100,7 @@ object CuratedWordStudies {
         }
     }
 
-    fun getAllCuratedStudies(): List<WordStudy> = allCuratedMap.values.map { study ->
+    fun getAllCuratedStudies(): List<WordStudy> = allCuratedList.map { study ->
         val withSources = if (study.searchGroundingSources.isEmpty()) {
             val authentic = com.example.data.verification.SourceTrustVerifier.getCuratedAuthenticSources(study.word)
                 .map { "${it.title} | ${it.domain} [Trust: ${it.trustScore}%]" }
@@ -90,7 +125,7 @@ object CuratedWordStudies {
         }
     }
 
-    private val allCuratedMap: Map<String, WordStudy> = listOf(
+    private val allCuratedList: List<WordStudy> = listOf(
         WordStudy(
             word = "euaggelion",
             testament = "New Testament",
@@ -346,8 +381,104 @@ object CuratedWordStudies {
             theologicalWeight = "Jesus identified the Shema as the greatest commandment in all of Scripture (Mark 12:29-30), uniting total love for God with practical love for neighbor.",
             keyScriptures = listOf("Deuteronomy 6:4-5", "James 1:22", "Mark 12:29-30", "Exodus 19:5"),
             closingInsight = "True biblical listening is measured by the movement of your hands and feet, not the nod of your head. When God speaks, to hear is to love, and to love is to obey."
+        ),
+        WordStudy(
+            word = "dikaiosyne",
+            testament = "New Testament",
+            originalWord = "δικαιοσύνη",
+            transliteration = "dikaiosyne",
+            strongsNumber = "G1343",
+            literalMeaning = "covenant righteousness, divine justice, judicial vindication",
+            thenMeaning = "In first-century Greco-Roman and Jewish discourse, 'dikaiosyne' was the fulfillment of cosmic and covenant justice. In the Roman forum, dikaiosyne was the judicial verdict that acquitted the innocent and held rulers accountable to supreme law. In Paul's letters (e.g. Romans 1:17; 3:21-26), the 'righteousness of God' is not an abstract moral demand, but God's public, judicial faithfulness to His covenant promises—putting the world to rights and vindicating all who are in Christ Jesus.",
+            nowMeaning = "Modern readers frequently reduce 'righteousness' to individualistic moral scrupulosity ('being a good, sinless person'), while treating 'justification' as a separate dry legal formula. They miss that in the Greek text, both are the exact same word family ('dike') expressing God's covenantal rectification of humanity.",
+            historicalBackground = "Greco-Roman civil courts (dikasteria) used 'dikaiosyne' for both ethical virtue and judicial acquittals. Imperial Rome claimed Augustus brought 'Iustitia' (justice/righteousness) through Roman peace, which the Apostles boldly subverted with Christ's cross.",
+            culturalContext = "In Jewish second-temple literature (such as Qumran and the Septuagint), God's dikaiosyne was His saving action on behalf of His oppressed covenant people, rescuing them from foreign pagan tyranny.",
+            legalDimension = "Under Roman and Jewish jurisprudence, a declaration of righteousness was a forensic verdict: an irrevocable decree by the Judge declaring the defendant legally in the right (dikaiōsis) and entitled to the full protection of the court.",
+            theologicalWeight = "Paul reveals that in the Gospel, God's righteousness is manifested apart from the Law (Romans 3:21). Christ took our condemnation so that believers are constituted 'the righteousness of God in Him' (2 Corinthians 5:21).",
+            keyScriptures = listOf("Romans 1:16-17", "Romans 3:21-26", "2 Corinthians 5:21", "Philippians 3:9"),
+            closingInsight = "You do not produce righteousness to earn God's verdict; God's sovereign judicial verdict in Christ grants you covenant righteousness, liberating you to live boldly as an ambassador of His kingdom."
+        ),
+        WordStudy(
+            word = "eirene",
+            testament = "New Testament",
+            originalWord = "εἰρήνη",
+            transliteration = "eirene",
+            strongsNumber = "G1515",
+            literalMeaning = "peace, reconciliation, cosmic harmony, cessation of enmity",
+            thenMeaning = "In the first-century Roman world, 'Pax' (peace) was celebrated as the 'Pax Romana'—an armed peace established through Caesar's military conquest and terrifying crucifixions. When the New Testament proclaimed 'eirene' through Jesus Christ (Ephesians 2:14, 'He Himself is our peace'), it subverted Rome's sword with Christ's cross. In Koine Greek, eirene joins together that which was broken, inaugurating total reconciliation between God and humanity, and reconciling Jewish and Gentile enemies into one new family.",
+            nowMeaning = "Modern culture defines 'peace' as the mere absence of arguments or a quiet inner mental tranquility. Biblical eirene is an active, objective reconciliation where former enemies sit at the same banquet table as blood-bought brothers.",
+            historicalBackground = "The Ara Pacis Augustae (Altar of Augustan Peace) in Rome dedicated in 9 BC celebrated the peace won by imperial legions. The Apostles proclaimed that true cosmic eirene came not through Caesar's legions, but through the sacrificial blood of the Prince of Peace.",
+            culturalContext = "First-century Mediterranean society was fractured by bitter racial, economic, and political divisions between Jews, Greeks, Romans, and barbarians. The Christian church became the only community where this deep enmity was annihilated.",
+            legalDimension = "Under ancient treaty law, 'eirene' signified the formal ratification of a treaty ending all hostilities, establishing mutual defense pacts and open borders between formerly warring kingdoms.",
+            theologicalWeight = "Romans 5:1 declares: 'Therefore, having been justified by faith, we have peace (eirene) with God through our Lord Jesus Christ.' Christ broke down the middle wall of partition, slaying the hostility at the cross (Ephesians 2:14-16).",
+            keyScriptures = listOf("Romans 5:1", "Ephesians 2:14-17", "Colossians 1:20", "John 14:27"),
+            closingInsight = "Peace is not the absence of trouble in your circumstances; it is the presence of an unbreakable reconciliation with God that anchors your soul no matter what storm rages around you."
+        ),
+        WordStudy(
+            word = "diatheke",
+            testament = "New Testament",
+            originalWord = "διαθήκη",
+            transliteration = "diatheke",
+            strongsNumber = "G1242",
+            literalMeaning = "testamentary covenant, last will and testament, unilateral disposition",
+            thenMeaning = "In classical and Hellenistic Greek, the standard word for a two-party reciprocal contract was 'syntheke.' However, the Septuagint and New Testament writers deliberately rejected 'syntheke' and chose 'diatheke'—the technical legal term for a last will and testament. In Roman and Greek law, a diatheke was not negotiated between equals; it was a sovereign, unilateral declaration by a testator disposing of their wealth to their chosen heirs upon their death (Hebrews 9:16-17).",
+            nowMeaning = "Modern people treat the 'New Testament' (covenant) like a mutual contract with God ('if I obey, God blesses me; if I fail, He leaves me'). But a diatheke is an unchangeable will: the Testator (Jesus) died, and His death permanently activated the inheritance for His heirs without revocation.",
+            historicalBackground = "Roman testamentary law (under the Praetor's Edict) required five or seven witnesses with seal rings to authenticate a testament. Once the testator died, the provisions of the testament were legally binding and could never be modified or annulled.",
+            culturalContext = "Inheritance in Greco-Roman culture was the primary vehicle of dynastic honor and family continuity. Entering into a diatheke as a designated heir granted immediate status, family protection, and authority.",
+            legalDimension = "Hebrews 9:16-17 provides the precise legal definition: 'For where there is a testament, there must also of necessity be the death of the testator. For a testament is in force after men are dead, since it has no power at all while the testator lives.'",
+            theologicalWeight = "At the Last Supper, Jesus declared: 'This cup is the new covenant (diatheke) in My blood, which is shed for you' (Luke 22:20). His death legally activated the full redemption, inheritance, and forgiveness promised to believers.",
+            keyScriptures = listOf("Hebrews 9:15-17", "Luke 22:20", "Galatians 3:15-17", "2 Corinthians 3:6"),
+            closingInsight = "A contract depends on your performance, but a testament depends on the death of the Testator. Because Jesus died and rose again, the inheritance of eternal life is legally yours, secured forever by divine blood."
+        ),
+        WordStudy(
+            word = "hagios",
+            testament = "New Testament",
+            originalWord = "ἅγιος",
+            transliteration = "hagios",
+            strongsNumber = "G40",
+            literalMeaning = "holy, consecrated, set apart for divine ownership, saint",
+            thenMeaning = "In classical Greek, 'hagios' referred to sacred temples, altars, and deities separated from profane common use. In the New Testament, 'hagios' undergoes a revolutionary shift: it is applied not to physical buildings or cloistered hermits, but directly to every believer in Jesus ('the saints', hagioi). Believers are declared holy because they have been consecrated as the living temple of the Holy Spirit (1 Corinthians 3:16).",
+            nowMeaning = "Today, people use 'saint' for stained-glass historical figures or morally flawless heroes. In scripture, 'saint' is not a title of posthumous achievement; it is the present, unmerited legal and spiritual identity of every follower of Jesus.",
+            historicalBackground = "In Greco-Roman cities like Corinth and Ephesus, temples to Aphrodite or Artemis claimed exclusivity. The Apostles boldly applied temple sanctity (hagios) to a ragtag group of former slaves, Jews, and Gentiles who met in private homes.",
+            culturalContext = "Pagan purity was purely ritual and external (washings before entering temples). New Testament hagios was internal, ethical, and communal—believers consecrated to live out the radiance of God in the public marketplace.",
+            legalDimension = "Under sacred law, objects declared 'hagios' were legally transferred into divine ownership. Defiling or misusing them was considered sacrilege (hierosylia). Believers belong exclusively to God and cannot be owned by evil.",
+            theologicalWeight = "1 Peter 2:9 proclaims: 'You are a chosen generation, a royal priesthood, a holy nation (ethnos hagion).' God's holiness in Christ does not cast us out in fear; it cleanses us and dwells within us.",
+            keyScriptures = listOf("1 Peter 1:15-16", "1 Peter 2:9", "1 Corinthians 1:2", "Ephesians 1:4"),
+            closingInsight = "You do not live holy in order to become a saint; you are already declared a saint (hagios) by God, and your life is the joyful outward expression of whose family you belong to."
+        ),
+        WordStudy(
+            word = "emunah",
+            testament = "Old Testament",
+            originalWord = "אֱמוּנָה",
+            transliteration = "emunah",
+            strongsNumber = "H530",
+            literalMeaning = "firmness, steadfastness, fidelity, unwavering reliability",
+            thenMeaning = "In Biblical Hebrew, 'emunah' is derived from the root 'aman' (to be firm, reliable, trustworthy—the source of 'Amen'). It is not an abstract intellectual agreement or passive head-knowledge. Emunah describes structural reliability—like a stone pillar holding up a roof, or Moses' hands held steady during battle (Exodus 17:12). In Habakkuk 2:4 ('the righteous shall live by his emunah'), it means living with relentless, steadfast covenant loyalty to God when everything around you collapses.",
+            nowMeaning = "Modern culture treats 'faith' as blind optimism, an emotional leap in the dark, or merely believing that God exists. In the Old Testament, emunah is an active, gritty endurance—faithfulness and loyalty walked out in daily obedience.",
+            historicalBackground = "During the Babylonian invasion, Habakkuk questioned God's justice. God's answer was not an explanation of military strategy, but a call to 'emunah'—unshakeable trust in God's covenant character amidst the ruins of Jerusalem.",
+            culturalContext = "In tribal Israel, survival depended on the 'emunah' (reliability) of pacts, shepherd guardianship, and boundary stones. To lack emunah was to be deceitful and treacherous.",
+            legalDimension = "In Hebrew judicial contracts, a witness of 'emunah' was a reliable witness whose testimony stood firm under cross-examination, guaranteeing justice in the city gates.",
+            theologicalWeight = "The primary attribute of Yahweh in Lamentations 3:23 is: 'Great is your faithfulness (emunah)!' God's emunah is the bedrock of creation: He cannot lie, He cannot break His word, and His covenant stands forever.",
+            keyScriptures = listOf("Habakkuk 2:4", "Exodus 17:12", "Lamentations 3:22-23", "Psalm 119:90"),
+            closingInsight = "Faith is not hoping God might do something; emunah is standing on the solid rock of who God already is, anchored in His unshakeable character even when the earth shakes beneath your feet."
+        ),
+        WordStudy(
+            word = "chen",
+            testament = "Old Testament",
+            originalWord = "חֵן",
+            transliteration = "chen",
+            strongsNumber = "H2580",
+            literalMeaning = "unmerited favor, gracious goodwill, pleasant acceptance",
+            thenMeaning = "In Biblical Hebrew, 'chen' describes the unearned favor or goodwill bestowed by a superior upon an inferior who has no claim or right to it. When an ancient petitioner approached an oriental monarch, their plea was: 'If I have found favor (chen) in your eyes.' It was an appeal purely to the ruler's sovereign grace, not the petitioner's resume. The quintessential biblical moment is Genesis 6:8: 'Noah found favor (chen) in the eyes of the LORD.'",
+            nowMeaning = "Many believers mistakenly think the Old Testament is all law and wrath with no grace, while the New Testament is grace. In reality, God's 'chen' (grace) is the fountainhead of every Old Testament rescue, from Noah to Abraham to Moses.",
+            historicalBackground = "In Ancient Near Eastern royal courts, seeking 'chen' meant bowing with one's face to the ground, recognizing that royal favor was an unconstrained, sovereign prerogative of the king.",
+            culturalContext = "Finding 'chen' in someone's eyes transformed a stranger or vulnerable wanderer into a protected guest with full hospitality rights in the household.",
+            legalDimension = "Under royal protocol, when a king granted 'chen' to an accused subject, all legal charges were waived by sovereign prerogative, granting clemency and royal protection.",
+            theologicalWeight = "When Moses asked to see God's glory on Mount Sinai, God proclaimed His name: 'Yahweh, Yahweh God, compassionate and gracious (channun, from chen), slow to anger, and abounding in lovingkindness' (Exodus 34:6). Grace is God's foundational identity.",
+            keyScriptures = listOf("Genesis 6:8", "Exodus 33:17-19", "Exodus 34:6", "Proverbs 3:34"),
+            closingInsight = "Grace did not begin at the New Testament; it is the heartbeat of God from the very first page of Genesis. You never have to earn God's acceptance—He looks upon you with sovereign, unfailing favor."
         )
-    ).associateBy { it.word }
+    )
 
     fun getCuratedChatResponse(wordStudy: WordStudy, userQuestion: String): String {
         val q = userQuestion.lowercase().trim()
