@@ -78,7 +78,22 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
         }
 
         if (cached != null) {
-            val updated = cached.copy(timestamp = System.currentTimeMillis())
+            val anomalyInfo = com.example.data.local.LinguisticAnomalyHelper.resolveAnomaly(cached)
+            val updated = if (!cached.hasLinguisticAnomaly && anomalyInfo != null) {
+                cached.copy(
+                    timestamp = System.currentTimeMillis(),
+                    hasLinguisticAnomaly = true,
+                    anomalyType = anomalyInfo.anomalyType.name,
+                    anomalyRootWord = anomalyInfo.rootWord,
+                    anomalyStrongsNumber = anomalyInfo.strongsNumber,
+                    anomalyPrimaryMeaning = anomalyInfo.primaryMeaning,
+                    anomalyAlternateMeaning = anomalyInfo.alternateMeaning,
+                    anomalyComparisonTable = anomalyInfo.comparisonMarkdownTable,
+                    anomalyWowFactor = anomalyInfo.wowFactor
+                )
+            } else {
+                cached.copy(timestamp = System.currentTimeMillis())
+            }
             wordStudyDao.updateWordStudy(updated)
             return@withContext updated
         }
@@ -86,9 +101,18 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
         // 2. Check curated scholarly database matching the requested testament
         val curated = CuratedWordStudies.getCuratedStudy(cleanedWord, cleanedTestament)
         if (curated != null && (cleanedTestament.isBlank() || curated.testament.equals(cleanedTestament, ignoreCase = true))) {
+            val anomalyInfo = com.example.data.local.LinguisticAnomalyHelper.resolveAnomaly(curated)
             val toSave = curated.copy(
                 word = if (cleanedWord.isNotBlank()) cleanedWord.lowercase() else curated.word,
-                timestamp = System.currentTimeMillis()
+                timestamp = System.currentTimeMillis(),
+                hasLinguisticAnomaly = curated.hasLinguisticAnomaly || (anomalyInfo != null),
+                anomalyType = curated.anomalyType.ifBlank { anomalyInfo?.anomalyType?.name ?: "" },
+                anomalyRootWord = curated.anomalyRootWord.ifBlank { anomalyInfo?.rootWord ?: "" },
+                anomalyStrongsNumber = curated.anomalyStrongsNumber.ifBlank { anomalyInfo?.strongsNumber ?: "" },
+                anomalyPrimaryMeaning = curated.anomalyPrimaryMeaning.ifBlank { anomalyInfo?.primaryMeaning ?: "" },
+                anomalyAlternateMeaning = curated.anomalyAlternateMeaning.ifBlank { anomalyInfo?.alternateMeaning ?: "" },
+                anomalyComparisonTable = curated.anomalyComparisonTable.ifBlank { anomalyInfo?.comparisonMarkdownTable ?: "" },
+                anomalyWowFactor = curated.anomalyWowFactor.ifBlank { anomalyInfo?.wowFactor ?: "" }
             )
             val id = wordStudyDao.insertWordStudy(toSave)
             return@withContext toSave.copy(id = id)
@@ -107,7 +131,22 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
 
             1. MORPHOLOGICAL WORD FAMILIES: Immediately identify the underlying Hebrew or Greek root lemma for the specified testament. You must check if the English word requested belongs to a larger linguistic family in the original language that English translations split into completely different words (e.g., in NT: Righteousness [Noun] and Justification [Verb] from 'dike'; or Holy [Adj] and Sanctification [Noun] from 'hagios'; in OT: Righteousness [Noun] and Justified [Verb] from 'tsadaq').
 
-            2. CO-PRESENTATION REQUIREMENT: If the requested word is part of such a split-translation family, you are strictly forbidden from presenting the word in isolation. You must bring out the related nouns, verbs, adjectives, and adverbs together in a single, unified profile.
+            2. MANDATORY LINGUISTIC ANOMALY SCAN (CHECK FOR THREE HIDDEN CATEGORIES):
+            You must rigorously scan the original language lemma and its root family for one of these three hidden linguistic anomalies:
+            - "HOMONYM": Identical original language spelling with completely unrelated root definitions (e.g., Hebrew 'Chesed' [חֶסֶד] meaning steadfast covenant love/mercy in H2617 vs. shame/reproach in H2617b / Lev 20:17 / Prov 14:34).
+            - "CONTRONYM" (Janus word): Single word/root that can mean its own exact polar opposite (e.g., Hebrew 'Barak' [בָּרַךְ, H1288] meaning to bless/kneel in worship vs. to curse/renounce God in Job 1:5, 2:9, 1 Kgs 21:10; or 'Kadosh' holy vs. temple prostitute 'Qedeshah').
+            - "SPLIT_TRANSLATION": One unified original root family split into entirely separate English words (e.g., Greek 'dikē' family split into 'Righteousness' [noun] and 'Justification' [verb]; or 'hagios' split into 'Holy' and 'Saints'; or 'pistis' split into 'Faith' and 'Believe').
+
+            If ANY of these three anomalies are caught:
+            - Set "hasLinguisticAnomaly": true
+            - Set "anomalyType": "HOMONYM", "CONTRONYM", or "SPLIT_TRANSLATION"
+            - Set "anomalyRootWord": The transliterated root word with original script (e.g., "Barak (בָּרַךְ)", "Chesed (חֶסֶד)", "Dikaiosynē (δικαιοσύνη)")
+            - Set "anomalyStrongsNumber": Strong's number(s) (e.g., "H1288", "H2617 / H2617b", "G1343 / G1344")
+            - Set "anomalyPrimaryMeaning": The standard context meaning in this study (e.g., "To bless, kneel, adore God")
+            - Set "anomalyAlternateMeaning": The hidden opposite, unrelated homonym, or split meaning (e.g., "To curse / renounce God (euphemistic contronym in Job 2:9)")
+            - Set "anomalyComparisonTable": Markdown comparative table contrasting the context meaning against the hidden alternate meaning with columns: | Dimension | Contextual Meaning | Hidden Alternate / Split Meaning | Scriptural Note |
+            - Set "anomalyWowFactor": A punchy, illuminating 2-3 sentence 'Wow Factor' takeaway explaining how the English translation hides the original linguistic depth.
+            If no notable anomaly exists, set "hasLinguisticAnomaly": false and leave the anomaly fields empty.
 
             3. THE "TRANSLATION DISCONNECT" HIGHLIGHT: Explicitly point out any hidden linguistic paradoxes or "wows" created by this disconnect. Explain how the Western/English theological understanding differs from the original Hebraic or Greek mindset because of these split translations.
 
@@ -126,6 +165,14 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
             - "rootLemma": String (the root lemma in original script and transliteration, e.g. "δίκη (dikē)" or "קָדַשׁ (qadash)")
             - "morphologicalFamilyTable": String (markdown table mapping Part of Speech, Original Greek/Hebrew Term, Transliteration, and English Translation, showing Noun, Verb, Adjective, and Adverb forms together)
             - "translationDisconnect": String (exhaustive explanation of the translation disconnect, highlighting the hidden linguistic paradox or 'wow' of how Western/English translations split one unified root into separate concepts, and how the original mindset differs)
+            - "hasLinguisticAnomaly": Boolean (true if Homonym, Contronym, or Split-Translation anomaly is detected)
+            - "anomalyType": String ("HOMONYM", "CONTRONYM", or "SPLIT_TRANSLATION", or empty string if none)
+            - "anomalyRootWord": String (transliterated root word with original script)
+            - "anomalyStrongsNumber": String (Strong's number)
+            - "anomalyPrimaryMeaning": String (contextual meaning)
+            - "anomalyAlternateMeaning": String (hidden alternate / opposite / split meaning)
+            - "anomalyComparisonTable": String (markdown comparative table)
+            - "anomalyWowFactor": String (brief 'Wow Factor' takeaway explaining how English translation hides the depth)
             - "thenMeaning": String (what it meant THEN in its original first-century Roman/Jewish historical/legal/cultural context. Go into rich, highly educational detail, explaining the background exhaustively.)
             - "nowMeaning": String (what modern readers often think it means NOW, highlighting modern misunderstandings or shallow theological interpretations)
             - "historicalBackground": String (the historical situation, audience, and era-specific dynamics of the word. Give as much historical details as possible, including names, dates, events, empires, and political contexts.)
@@ -383,6 +430,16 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
             }
             val resolvedDisconnect = parsedStudy.translationDisconnect.ifBlank { philProfile.translationDisconnect }
 
+            val parsedAnomaly = com.example.data.local.LinguisticAnomalyHelper.resolveAnomaly(parsedStudy)
+            val finalHasAnomaly = parsedStudy.hasLinguisticAnomaly || (parsedAnomaly != null)
+            val finalAnomalyType = parsedStudy.anomalyType.ifBlank { parsedAnomaly?.anomalyType?.name ?: "" }
+            val finalRootWord = parsedStudy.anomalyRootWord.ifBlank { parsedAnomaly?.rootWord ?: "" }
+            val finalStrongs = parsedStudy.anomalyStrongsNumber.ifBlank { parsedAnomaly?.strongsNumber ?: "" }
+            val finalPrimary = parsedStudy.anomalyPrimaryMeaning.ifBlank { parsedAnomaly?.primaryMeaning ?: "" }
+            val finalAlternate = parsedStudy.anomalyAlternateMeaning.ifBlank { parsedAnomaly?.alternateMeaning ?: "" }
+            val finalCompTable = parsedStudy.anomalyComparisonTable.ifBlank { parsedAnomaly?.comparisonMarkdownTable ?: "" }
+            val finalWowFactor = parsedStudy.anomalyWowFactor.ifBlank { parsedAnomaly?.wowFactor ?: "" }
+
             val wordStudyToSave = parsedStudy.copy(
                 word = cleanedWord,
                 testament = cleanedTestament,
@@ -390,7 +447,15 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
                 searchGroundingSources = verifiedSourceStrings,
                 rootLemma = resolvedRootLemma,
                 morphologicalFamilyTable = resolvedTable,
-                translationDisconnect = resolvedDisconnect
+                translationDisconnect = resolvedDisconnect,
+                hasLinguisticAnomaly = finalHasAnomaly,
+                anomalyType = finalAnomalyType,
+                anomalyRootWord = finalRootWord,
+                anomalyStrongsNumber = finalStrongs,
+                anomalyPrimaryMeaning = finalPrimary,
+                anomalyAlternateMeaning = finalAlternate,
+                anomalyComparisonTable = finalCompTable,
+                anomalyWowFactor = finalWowFactor
             )
             val id = wordStudyDao.insertWordStudy(wordStudyToSave)
             return@withContext wordStudyToSave.copy(id = id)
@@ -423,13 +488,23 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
                 }
                 val fallbackDisconnect = fallback.translationDisconnect.ifBlank { fallbackProfile.translationDisconnect }
 
+                val fallbackAnomaly = com.example.data.local.LinguisticAnomalyHelper.resolveAnomaly(fallback)
+
                 val toSave = fallback.copy(
                     word = cleanedWord.lowercase(),
                     timestamp = System.currentTimeMillis(),
                     searchGroundingSources = verifiedSourceStrings,
                     rootLemma = fallbackRootLemma,
                     morphologicalFamilyTable = fallbackTable,
-                    translationDisconnect = fallbackDisconnect
+                    translationDisconnect = fallbackDisconnect,
+                    hasLinguisticAnomaly = fallback.hasLinguisticAnomaly || (fallbackAnomaly != null),
+                    anomalyType = fallback.anomalyType.ifBlank { fallbackAnomaly?.anomalyType?.name ?: "" },
+                    anomalyRootWord = fallback.anomalyRootWord.ifBlank { fallbackAnomaly?.rootWord ?: "" },
+                    anomalyStrongsNumber = fallback.anomalyStrongsNumber.ifBlank { fallbackAnomaly?.strongsNumber ?: "" },
+                    anomalyPrimaryMeaning = fallback.anomalyPrimaryMeaning.ifBlank { fallbackAnomaly?.primaryMeaning ?: "" },
+                    anomalyAlternateMeaning = fallback.anomalyAlternateMeaning.ifBlank { fallbackAnomaly?.alternateMeaning ?: "" },
+                    anomalyComparisonTable = fallback.anomalyComparisonTable.ifBlank { fallbackAnomaly?.comparisonMarkdownTable ?: "" },
+                    anomalyWowFactor = fallback.anomalyWowFactor.ifBlank { fallbackAnomaly?.wowFactor ?: "" }
                 )
                 val id = wordStudyDao.insertWordStudy(toSave)
                 return@withContext toSave.copy(id = id)

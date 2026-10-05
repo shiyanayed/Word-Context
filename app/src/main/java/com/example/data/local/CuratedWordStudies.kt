@@ -27,6 +27,7 @@ object CuratedWordStudies {
                 else -> clean
             }
             isOt -> when (clean) {
+                "barak", "bless", "blessing", "curse" -> "barak"
                 "righteousness", "justice", "tsedakah", "zedakah", "tsadaq" -> "righteousness"
                 "peace", "wholeness", "shalom" -> "shalom"
                 "covenant", "berit", "treaty" -> "covenant"
@@ -477,6 +478,36 @@ object CuratedWordStudies {
             theologicalWeight = "When Moses asked to see God's glory on Mount Sinai, God proclaimed His name: 'Yahweh, Yahweh God, compassionate and gracious (channun, from chen), slow to anger, and abounding in lovingkindness' (Exodus 34:6). Grace is God's foundational identity.",
             keyScriptures = listOf("Genesis 6:8", "Exodus 33:17-19", "Exodus 34:6", "Proverbs 3:34"),
             closingInsight = "Grace did not begin at the New Testament; it is the heartbeat of God from the very first page of Genesis. You never have to earn God's acceptance—He looks upon you with sovereign, unfailing favor."
+        ),
+        WordStudy(
+            word = "barak",
+            testament = "Old Testament",
+            originalWord = "בָּרַךְ",
+            transliteration = "barak",
+            strongsNumber = "H1288",
+            literalMeaning = "to kneel, bless, praise, adore with bent knee",
+            thenMeaning = "In Biblical Hebrew, 'barak' fundamentally means to bend the knee in reverent adoration or to invoke divine favor upon someone. However, in an extraordinary scribal convention (tiqqune soferim), biblical authors and scribes utilized 'barak' as a reverential contronym—substituting 'bless' in place of 'curse' whenever referring to cursing God, because writing a direct curse against Yahweh was deemed too horrific to articulate (Job 1:5, 1:11, 2:9; 1 Kings 21:10, 13).",
+            nowMeaning = "Modern readers assume 'blessing' is merely wishing someone good luck or receiving financial health. They completely miss the double-edged contronymic nature of the Hebrew text where the same word is used euphemistically to signify the ultimate blasphemy of renouncing God.",
+            historicalBackground = "In ancient Semitic royal courts, approaching a monarch required physical prostration ('berek' means knee). In judicial trials such as Naboth's vineyard (1 Kings 21), accusing someone of 'blessing God and the king' was the official legal euphemism for capital treason and blasphemy.",
+            culturalContext = "Hebrew culture possessed an immense reverence for the divine name (HaShem). Scribes avoided even uttering phrases like 'curse God', using antiphrasis (contronymic euphemism) so that the sacred text remained clean of profane curses.",
+            legalDimension = "Under Mosaic blasphemy law (Leviticus 24:16), cursing the Name carried the mandatory death penalty by stoning. The euphemistic usage of 'barak' in judicial records shows how ancient courts strictly handled blasphemy testimony.",
+            theologicalWeight = "When Job's wife says 'Curse God and die!' (Job 2:9), the Hebrew literally says: 'Bless God and die!' Job refuses to let his adoration be twisted into renunciation, declaring: 'The LORD gave and the LORD has taken away; blessed (barak) be the name of the LORD!' (Job 1:21).",
+            keyScriptures = listOf("Genesis 12:2-3", "Psalm 103:1", "Job 1:21", "Job 2:9", "1 Kings 21:10"),
+            closingInsight = "To 'bless' God is to bend the knee when you have everything, and to keep your knee bent in steadfast trust when you have lost everything. True worship refuses to invert blessing into bitter renunciation.",
+            hasLinguisticAnomaly = true,
+            anomalyType = "CONTRONYM",
+            anomalyRootWord = "Barak (בָּרַךְ)",
+            anomalyStrongsNumber = "H1288",
+            anomalyPrimaryMeaning = "To bless, kneel in adoration, praise God (Gen 12:2, Ps 103:1)",
+            anomalyAlternateMeaning = "To curse, renounce God (euphemistic contronym in Job 2:9, 1 Kgs 21:10)",
+            anomalyComparisonTable = """
+                | Context | Hebrew Lemma (Barak) | Context Meaning | Hidden Contronym / Euphemism |
+                | --- | --- | --- | --- |
+                | Worship (Ps 103:1) | בָּרַךְ (barak) | Bless the LORD | Knee bent in adoration |
+                | Job's Trial (Job 2:9) | בָּרַךְ (barak) | 'Bless God & die' | Euphemistic substitution for 'curse' |
+                | Treason (1 Kgs 21:10) | בָּרַךְ (barak) | 'Blessed God & king' | Judicially meant capital blasphemy |
+            """.trimIndent(),
+            anomalyWowFactor = "Ancient Hebrew scribes considered uttering or writing a direct curse against Yahweh so utterly horrifying that they employed 'barak' as a reverential contronym. When Job's wife tells him to 'Curse God and die' (Job 2:9), the Hebrew text literally reads: 'Bless God and die!' English translations completely hide this sacred linguistic paradox."
         )
     )
 

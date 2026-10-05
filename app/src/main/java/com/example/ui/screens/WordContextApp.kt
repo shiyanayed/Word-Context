@@ -51,6 +51,7 @@ import com.example.data.verification.SourceTrustVerifier
 import com.example.data.verification.TrustTier
 import com.example.data.verification.GroundingSource
 import com.example.data.verification.VerificationMetadata
+import com.example.ui.components.LinguisticDisconnectAlertCard
 import com.example.ui.SearchUiState
 import com.example.ui.WordStudyViewModel
 import com.example.ui.ChatMessage
@@ -506,9 +507,8 @@ fun WordContextApp(
                             
                             // Suggestions Capsule Tags in FlowRow
                             val chipSuggestions = listOf(
-                                "euaggelion", "grace", "covenant", "adoption", 
-                                "redemption", "faith", "shalom", "agape", 
-                                "lovingkindness", "redeemer", "righteousness", "logos"
+                                "barak", "chesed", "righteousness", "euaggelion", "grace", "covenant", 
+                                "adoption", "redemption", "faith", "shalom", "kadosh", "agape", "logos"
                             )
                             
                             androidx.compose.foundation.layout.FlowRow(
@@ -517,7 +517,7 @@ fun WordContextApp(
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 chipSuggestions.forEach { chipWord ->
-                                    val isNT = chipWord in listOf("euaggelion", "grace", "adoption", "redemption", "faith", "agape", "logos")
+                                    val isNT = chipWord in listOf("euaggelion", "grace", "adoption", "redemption", "faith", "agape", "logos", "righteousness")
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(20.dp))
@@ -544,7 +544,48 @@ fun WordContextApp(
                                 }
                             }
                             
-                            Spacer(modifier = Modifier.height(30.dp))
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            // Linguistic Anomaly Scanner Highlight Box
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFF0F172A).copy(alpha = 0.7f))
+                                    .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+                                    .padding(14.dp)
+                            ) {
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Bolt,
+                                            contentDescription = null,
+                                            tint = Color(0xFFF59E0B),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "HIDDEN LINGUISTIC ANOMALY SCANNER ACTIVE",
+                                            fontSize = 10.5.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFF59E0B),
+                                            letterSpacing = 0.8.sp
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(
+                                        text = "Our philological engine strictly checks for 3 hidden original language phenomena:\n" +
+                                                "• Homonyms: Identical spellings with unrelated root definitions (e.g. 'Chesed')\n" +
+                                                "• Contronyms: Words meaning their own exact polar opposite (e.g. 'Barak')\n" +
+                                                "• Split-Translations: Unified root families split in English (e.g. 'Dikaiosyne')",
+                                        fontSize = 11.sp,
+                                        color = Color(0xFF94A3B8),
+                                        lineHeight = 16.sp
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(24.dp))
                         }
                     } else {
                         // VIEWING STUDY DETAILS / LOADING / ERROR: Minimized Search Bar at the top for quick searches
@@ -1684,6 +1725,11 @@ fun WordStudyDetailView(
                 )
             }
         }
+
+        // ==========================================
+        // 1.7 LINGUISTIC DISCONNECT ALERT (HOMONYMS, CONTRONYMS, SPLIT-TRANSLATIONS)
+        // ==========================================
+        LinguisticDisconnectAlertCard(study = study)
 
         // ==========================================
         // 1.8 ORIGINAL LANGUAGE LEMMA PROFILE & COMPARATIVE MORPHOLOGICAL WORD FAMILY

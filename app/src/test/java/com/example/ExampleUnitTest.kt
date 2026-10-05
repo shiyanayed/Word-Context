@@ -104,4 +104,42 @@ class ExampleUnitTest {
         assertTrue(filteredSources.none { it.url.contains("quora") })
         assertTrue(metadata.overallTrustScore >= 90)
     }
+
+    @Test
+    fun testHomonymAnomalyDetection() {
+        val chesedStudy = CuratedWordStudies.getCuratedStudy("chesed", "Old Testament")
+        assertNotNull(chesedStudy)
+        val anomaly = com.example.data.local.LinguisticAnomalyHelper.resolveAnomaly(chesedStudy!!)
+        assertNotNull(anomaly)
+        assertEquals(com.example.data.local.AnomalyType.HOMONYM, anomaly?.anomalyType)
+        assertTrue(anomaly?.primaryMeaning?.contains("loyalty", ignoreCase = true) == true || anomaly?.primaryMeaning?.contains("love", ignoreCase = true) == true)
+        assertTrue(anomaly?.alternateMeaning?.contains("reproach", ignoreCase = true) == true || anomaly?.alternateMeaning?.contains("shame", ignoreCase = true) == true)
+        assertTrue(anomaly?.comparisonRows?.isNotEmpty() == true)
+        assertTrue(anomaly?.wowFactor?.isNotBlank() == true)
+    }
+
+    @Test
+    fun testContronymAnomalyDetection() {
+        val barakStudy = CuratedWordStudies.getCuratedStudy("barak", "Old Testament")
+        assertNotNull(barakStudy)
+        val anomaly = com.example.data.local.LinguisticAnomalyHelper.resolveAnomaly(barakStudy!!)
+        assertNotNull(anomaly)
+        assertEquals(com.example.data.local.AnomalyType.CONTRONYM, anomaly?.anomalyType)
+        assertTrue(anomaly?.primaryMeaning?.contains("bless", ignoreCase = true) == true)
+        assertTrue(anomaly?.alternateMeaning?.contains("curse", ignoreCase = true) == true)
+        assertTrue(anomaly?.comparisonRows?.isNotEmpty() == true)
+        assertTrue(anomaly?.wowFactor?.contains("Job") == true)
+    }
+
+    @Test
+    fun testSplitTranslationAnomalyDetection() {
+        val dikeStudy = CuratedWordStudies.getCuratedStudy("dikaiosyne", "New Testament")
+        assertNotNull(dikeStudy)
+        val anomaly = com.example.data.local.LinguisticAnomalyHelper.resolveAnomaly(dikeStudy!!)
+        assertNotNull(anomaly)
+        assertEquals(com.example.data.local.AnomalyType.SPLIT_TRANSLATION, anomaly?.anomalyType)
+        assertTrue(anomaly?.primaryMeaning?.contains("Righteousness", ignoreCase = true) == true)
+        assertTrue(anomaly?.alternateMeaning?.contains("Justif", ignoreCase = true) == true)
+        assertTrue(anomaly?.wowFactor?.contains("Latinate") == true || anomaly?.wowFactor?.contains("split") == true)
+    }
 }
