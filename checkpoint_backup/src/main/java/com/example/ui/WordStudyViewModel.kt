@@ -245,11 +245,19 @@ class WordStudyViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun updateSelectedTestament(testament: String) {
+        val previous = _selectedTestament.value
         _selectedTestament.value = testament
+        if (previous != testament && _searchQuery.value.trim().isNotEmpty()) {
+            performSearch()
+        }
     }
 
     fun setViewingStudy(study: WordStudy?) {
         _viewingStudy.value = study
+        if (study != null) {
+            _selectedTestament.value = study.testament
+            _searchQuery.value = study.word
+        }
     }
 
     fun performSearch() {

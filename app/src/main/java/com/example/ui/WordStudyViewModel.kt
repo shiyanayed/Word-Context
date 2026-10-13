@@ -228,6 +228,60 @@ class WordStudyViewModel(application: Application) : AndroidViewModel(applicatio
             initialValue = emptyList()
         )
 
+    val studiesWithNotes: StateFlow<List<WordStudy>> = repository.wordStudiesWithNotes
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    private val _isProUser = MutableStateFlow(prefs.getBoolean("is_pro_user", false))
+    val isProUser: StateFlow<Boolean> = _isProUser.asStateFlow()
+
+    private val _themeMode = MutableStateFlow(
+        if (prefs.getString("theme_mode", "MIDNIGHT") == "SCHOLAR_DESK") 
+            com.example.ui.theme.AppThemeMode.SCHOLAR_DESK 
+        else 
+            com.example.ui.theme.AppThemeMode.MIDNIGHT
+    )
+    val themeMode: StateFlow<com.example.ui.theme.AppThemeMode> = _themeMode.asStateFlow()
+
+    fun setThemeMode(mode: com.example.ui.theme.AppThemeMode) {
+        prefs.edit().putString("theme_mode", mode.name).commit()
+        _themeMode.value = mode
+    }
+
+    fun toggleThemeMode() {
+        val newMode = if (_themeMode.value == com.example.ui.theme.AppThemeMode.MIDNIGHT) {
+            com.example.ui.theme.AppThemeMode.SCHOLAR_DESK
+        } else {
+            com.example.ui.theme.AppThemeMode.MIDNIGHT
+        }
+        setThemeMode(newMode)
+    }
+
+    fun setProStatus(isPro: Boolean) {
+        prefs.edit().putBoolean("is_pro_user", isPro).commit()
+        _isProUser.value = isPro
+    }
+
+    private val _hasSeenOnboarding = MutableStateFlow(prefs.getBoolean("has_seen_onboarding", false))
+    val hasSeenOnboarding: StateFlow<Boolean> = _hasSeenOnboarding.asStateFlow()
+
+    fun setHasSeenOnboarding(seen: Boolean) {
+        prefs.edit().putBoolean("has_seen_onboarding", seen).commit()
+        _hasSeenOnboarding.value = seen
+    }
+
+    fun updateUserNotes(studyId: Long, notes: String, tags: List<String>) {
+        viewModelScope.launch {
+            repository.updateUserNotes(studyId, notes, tags)
+            if (_viewingStudy.value?.id == studyId) {
+                _viewingStudy.value = _viewingStudy.value?.copy(userNotes = notes, userTags = tags)
+            }
+        }
+    }
+
     private val _searchUiState = MutableStateFlow<SearchUiState>(SearchUiState.Idle)
     val searchUiState: StateFlow<SearchUiState> = _searchUiState.asStateFlow()
 
@@ -260,7 +314,7 @@ class WordStudyViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun performSearch() {
+    fun performSearch(forceRefresh: Boolean = false) {
         val word = _searchQuery.value.trim()
         val testament = _selectedTestament.value
         if (word.isEmpty()) return
@@ -276,13 +330,19 @@ class WordStudyViewModel(application: Application) : AndroidViewModel(applicatio
                     "Grok" -> _grokKey.value
                     else -> ""
                 }
-                val result = repository.getWordStudy(word, testament, provider, apiKey)
+                val result = repository.getWordStudy(word, testament, provider, apiKey, forceRefresh = forceRefresh)
                 _searchUiState.value = SearchUiState.Success(result)
                 _viewingStudy.value = result // Show the detail view immediately
             } catch (e: Exception) {
                 _searchUiState.value = SearchUiState.Error(e.message ?: "An unexpected error occurred.")
             }
         }
+    }
+
+    fun reanalyzeStudy(study: WordStudy) {
+        _searchQuery.value = study.word
+        _selectedTestament.value = study.testament
+        performSearch(forceRefresh = true)
     }
 
     fun toggleFavorite(study: WordStudy) {

@@ -17,6 +17,9 @@ interface WordStudyDao {
     @Query("SELECT * FROM word_studies WHERE isFavorite = 1 ORDER BY timestamp DESC")
     fun getFavoriteWordStudies(): Flow<List<WordStudy>>
 
+    @Query("SELECT * FROM word_studies WHERE LENGTH(userNotes) > 0 ORDER BY timestamp DESC")
+    fun getWordStudiesWithNotes(): Flow<List<WordStudy>>
+
     @Query("SELECT * FROM word_studies WHERE (LOWER(word) = LOWER(:word) OR LOWER(transliteration) = LOWER(:word) OR originalWord = :word) AND LOWER(testament) = LOWER(:testament) LIMIT 1")
     suspend fun getWordStudyByWordAndTestament(word: String, testament: String): WordStudy?
 
@@ -34,6 +37,9 @@ interface WordStudyDao {
 
     @Update
     suspend fun updateWordStudy(wordStudy: WordStudy)
+
+    @Query("UPDATE word_studies SET userNotes = :notes, userTags = :tags WHERE id = :id")
+    suspend fun updateUserNotes(id: Long, notes: String, tags: List<String>)
 
     @Delete
     suspend fun deleteWordStudy(wordStudy: WordStudy)

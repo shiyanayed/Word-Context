@@ -1,6 +1,7 @@
 @file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 package com.example.ui.screens
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -52,6 +53,8 @@ import com.example.data.verification.TrustTier
 import com.example.data.verification.GroundingSource
 import com.example.data.verification.VerificationMetadata
 import com.example.ui.components.LinguisticDisconnectAlertCard
+import com.example.ui.components.StudyExportSheet
+import com.example.ui.components.ExegeticalNotesSection
 import com.example.ui.SearchUiState
 import com.example.ui.WordStudyViewModel
 import com.example.ui.ChatMessage
@@ -84,6 +87,7 @@ fun WordContextApp(
 
     val history by viewModel.history.collectAsState()
     val favorites by viewModel.favorites.collectAsState()
+    val studiesWithNotes by viewModel.studiesWithNotes.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedTestament by viewModel.selectedTestament.collectAsState()
     val searchUiState by viewModel.searchUiState.collectAsState()
@@ -99,9 +103,22 @@ fun WordContextApp(
     val grokKey by viewModel.grokKey.collectAsState()
     val useSearchGrounding by viewModel.useSearchGrounding.collectAsState()
     val strictVerification by viewModel.strictVerification.collectAsState()
+    val isProUser by viewModel.isProUser.collectAsState()
+    val hasSeenOnboarding by viewModel.hasSeenOnboarding.collectAsState()
+    val themeMode by viewModel.themeMode.collectAsState()
 
-    var activeTab by remember { mutableStateOf(0) } // 0: Hub, 1: History, 2: Favorites, 3: Settings
+    var activeTab by remember { mutableStateOf(0) } // 0: Hub, 1: Lexicon, 2: Notebook, 3: Settings
     var isChatOpen by remember { mutableStateOf(false) }
+    var isPaywallOpen by remember { mutableStateOf(false) }
+    var isLegalOpen by remember { mutableStateOf(false) }
+    var isOnboardingOpen by remember { mutableStateOf(false) }
+    var studyToExport by remember { mutableStateOf<WordStudy?>(null) }
+
+    LaunchedEffect(hasSeenOnboarding) {
+        if (!hasSeenOnboarding) {
+            isOnboardingOpen = true
+        }
+    }
 
     // Beautiful loading trivia loop
     val triviaList = listOf(
@@ -123,34 +140,54 @@ fun WordContextApp(
         }
     }
 
+    val isScholarDesk = themeMode == com.example.ui.theme.AppThemeMode.SCHOLAR_DESK
+    val primaryBg = if (isScholarDesk) Color(0xFFFBF8F2) else Color(0xFF080C14)
+    val topBarTextColor = if (isScholarDesk) Color(0xFF1C1917) else Color.White
+    val bottomNavBg = if (isScholarDesk) Color(0xFFFFFFFF) else Color(0xFF080C14)
+    val bottomNavBorder = if (isScholarDesk) Color(0xFFE2D9C8) else Color(0xFF1E2E45)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .drawBehind {
-                // Background color matching image (rich deep dark space blue)
-                drawRect(color = Color(0xFF080C14))
-                
-                // Top right soft blue light glow
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color(0xFF1D4ED8).copy(alpha = 0.38f), Color.Transparent),
+                if (isScholarDesk) {
+                    // Scholar's Desk parchment warm background with subtle sepia lighting
+                    drawRect(color = Color(0xFFFBF8F2))
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0xFFEADBCE).copy(alpha = 0.5f), Color.Transparent),
+                            center = androidx.compose.ui.geometry.Offset(size.width * 0.85f, size.height * 0.12f),
+                            radius = size.width * 0.75f
+                        ),
                         center = androidx.compose.ui.geometry.Offset(size.width * 0.85f, size.height * 0.12f),
                         radius = size.width * 0.75f
-                    ),
-                    center = androidx.compose.ui.geometry.Offset(size.width * 0.85f, size.height * 0.12f),
-                    radius = size.width * 0.75f
-                )
-                
-                // Center-bottom soft blue light glow (behind action button)
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color(0xFF2563EB).copy(alpha = 0.32f), Color.Transparent),
+                    )
+                } else {
+                    // Background color matching image (rich deep dark space blue)
+                    drawRect(color = Color(0xFF080C14))
+                    
+                    // Top right soft blue light glow
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0xFF1D4ED8).copy(alpha = 0.38f), Color.Transparent),
+                            center = androidx.compose.ui.geometry.Offset(size.width * 0.85f, size.height * 0.12f),
+                            radius = size.width * 0.75f
+                        ),
+                        center = androidx.compose.ui.geometry.Offset(size.width * 0.85f, size.height * 0.12f),
+                        radius = size.width * 0.75f
+                    )
+                    
+                    // Center-bottom soft blue light glow (behind action button)
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0xFF2563EB).copy(alpha = 0.32f), Color.Transparent),
+                            center = androidx.compose.ui.geometry.Offset(size.width * 0.5f, size.height * 0.55f),
+                            radius = size.width * 0.85f
+                        ),
                         center = androidx.compose.ui.geometry.Offset(size.width * 0.5f, size.height * 0.55f),
                         radius = size.width * 0.85f
-                    ),
-                    center = androidx.compose.ui.geometry.Offset(size.width * 0.5f, size.height * 0.55f),
-                    radius = size.width * 0.85f
-                )
+                    )
+                }
             }
     ) {
         Scaffold(
@@ -161,7 +198,7 @@ fun WordContextApp(
                         .fillMaxWidth()
                         .statusBarsPadding()
                         .background(Color.Transparent)
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -172,12 +209,12 @@ fun WordContextApp(
                         Icon(
                             imageVector = Icons.Outlined.Book,
                             contentDescription = "Bible Study Logo",
-                            tint = Color.White,
+                            tint = if (isScholarDesk) Color(0xFF1E40AF) else Color.White,
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
                             "WORD CONTEXT",
-                            color = Color.White,
+                            color = topBarTextColor,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             letterSpacing = 1.2.sp,
@@ -187,28 +224,82 @@ fun WordContextApp(
                     
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
+                        // Study Theme Mode Toggle (Scholar's Desk Lamp vs Midnight Sanctum)
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(if (isScholarDesk) Color(0xFFB45309).copy(alpha = 0.15f) else Color(0xFF64748B).copy(alpha = 0.2f))
+                                .border(1.dp, if (isScholarDesk) Color(0xFFB45309) else Color(0xFF475569), RoundedCornerShape(16.dp))
+                                .clickable { viewModel.toggleThemeMode() }
+                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                                .testTag("top_bar_theme_toggle")
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = if (isScholarDesk) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
+                                    contentDescription = "Toggle Reading Mode",
+                                    tint = if (isScholarDesk) Color(0xFFB45309) else Color(0xFF94A3B8),
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (isScholarDesk) "Desk" else "Dark",
+                                    color = if (isScholarDesk) Color(0xFF92400E) else Color(0xFFE2E8F0),
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+
+                        // Go Pro / Pro Scholar Status Button
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(if (isProUser) Color(0xFF10B981).copy(alpha = 0.2f) else Color(0xFFF59E0B).copy(alpha = 0.2f))
+                                .border(1.dp, if (isProUser) Color(0xFF10B981) else Color(0xFFF59E0B), RoundedCornerShape(16.dp))
+                                .clickable { isPaywallOpen = true }
+                                .padding(horizontal = 9.dp, vertical = 6.dp)
+                                .testTag("top_bar_pro_button")
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = if (isProUser) Icons.Filled.Check else Icons.Filled.Star,
+                                    contentDescription = "Scholar Pro",
+                                    tint = if (isProUser) Color(0xFF10B981) else Color(0xFFF59E0B),
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text(
+                                    text = if (isProUser) "Pro" else "Go Pro",
+                                    color = if (isProUser) (if (isScholarDesk) Color(0xFF065F46) else Color(0xFF34D399)) else (if (isScholarDesk) Color(0xFFB45309) else Color(0xFFFBBF24)),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+
                         // Quick Ask AI Button with Google Grounding styling
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(Color(0xFF38BDF8).copy(alpha = 0.15f))
-                                .border(1.dp, Color(0xFF38BDF8).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                                .background(if (isScholarDesk) Color(0xFF1E40AF).copy(alpha = 0.1f) else Color(0xFF38BDF8).copy(alpha = 0.15f))
+                                .border(1.dp, if (isScholarDesk) Color(0xFF1E40AF).copy(alpha = 0.4f) else Color(0xFF38BDF8).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
                                 .clickable { isChatOpen = true }
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                                .padding(horizontal = 9.dp, vertical = 6.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.AutoAwesome,
                                     contentDescription = "Ask AI",
-                                    tint = Color(0xFF38BDF8),
+                                    tint = if (isScholarDesk) Color(0xFF1E40AF) else Color(0xFF38BDF8),
                                     modifier = Modifier.size(13.dp)
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Spacer(modifier = Modifier.width(3.dp))
                                 Text(
                                     text = "Ask AI",
-                                    color = Color(0xFF38BDF8),
+                                    color = if (isScholarDesk) Color(0xFF1E40AF) else Color(0xFF38BDF8),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.sp
                                 )
@@ -230,16 +321,23 @@ fun WordContextApp(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .background(Color.White.copy(alpha = 0.08f), RoundedCornerShape(percent = 50))
-                                    .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(percent = 50)),
+                                    .size(34.dp)
+                                    .background(
+                                        if (isScholarDesk) Color(0xFF1C1917).copy(alpha = 0.08f) else Color.White.copy(alpha = 0.08f),
+                                        RoundedCornerShape(percent = 50)
+                                    )
+                                    .border(
+                                        1.dp,
+                                        if (isScholarDesk) Color(0xFF1C1917).copy(alpha = 0.15f) else Color.White.copy(alpha = 0.15f),
+                                        RoundedCornerShape(percent = 50)
+                                    ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = "Close",
-                                    tint = Color.White.copy(alpha = 0.85f),
-                                    modifier = Modifier.size(16.dp)
+                                    tint = if (isScholarDesk) Color(0xFF1C1917) else Color.White.copy(alpha = 0.85f),
+                                    modifier = Modifier.size(15.dp)
                                 )
                             }
                         }
@@ -249,11 +347,11 @@ fun WordContextApp(
             bottomBar = {
                 // Elegant custom bottom navigation bar matching the design
                 NavigationBar(
-                    containerColor = Color(0xFF080C14),
+                    containerColor = bottomNavBg,
                     modifier = Modifier
                         .border(
                             width = 1.dp,
-                            color = Color(0xFF1E2E45),
+                            color = bottomNavBorder,
                             shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                         )
                         .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
@@ -263,15 +361,19 @@ fun WordContextApp(
                     listOf(
                         Triple(0, Icons.Outlined.Search, "Study Hub"),
                         Triple(1, Icons.Outlined.MenuBook, "Lexicon"),
-                        Triple(2, Icons.Outlined.Bookmarks, "Insights"),
+                        Triple(2, Icons.Outlined.EditNote, "Notebook"),
                         Triple(3, Icons.Outlined.Settings, "Settings")
                     ).forEach { (tabIndex, iconVector, labelText) ->
                         val isSelected = activeTab == tabIndex
-                        val tabColor = if (isSelected) Color(0xFF38BDF8) else Color(0xFF5A6E85)
+                        val tabColor = if (isSelected) {
+                            if (isScholarDesk) Color(0xFF1E40AF) else Color(0xFF38BDF8)
+                        } else {
+                            if (isScholarDesk) Color(0xFF78716C) else Color(0xFF5A6E85)
+                        }
                         val tabTag = when (tabIndex) {
                             0 -> "nav_study_hub"
                             1 -> "nav_lexicon"
-                            2 -> "nav_insights"
+                            2 -> "nav_notebook"
                             3 -> "nav_settings"
                             else -> "nav_tab_$tabIndex"
                         }
@@ -669,52 +771,62 @@ fun WordContextApp(
                             onSendChatMessage = { text, study -> viewModel.sendChatMessage(text, study) },
                             onResetChat = { viewModel.resetChat() },
                             onOpenChat = { isChatOpen = true },
-                            onRetrySearch = { viewModel.performSearch() }
+                            onRetrySearch = { viewModel.performSearch() },
+                            onReanalyzeStudy = { study -> viewModel.reanalyzeStudy(study) },
+                            onOpenExport = { studyToExport = it },
+                            onSaveNotes = { id, notes, tags -> viewModel.updateUserNotes(id, notes, tags) }
                         )
                     }
-                1 -> {
-                    // HISTORY TAB
-                    HistoryTab(
-                        history = history,
-                        onSelectStudy = { study ->
-                            viewModel.setViewingStudy(study)
-                            activeTab = 0 // Switch to hub to view it
-                        },
-                        onDeleteStudy = { viewModel.deleteStudy(it.id) }
-                    )
+                    1 -> {
+                        // LEXICON TAB (100% Offline Strong's Concordance Base)
+                        LexiconScreen(
+                            onSelectWordForStudy = { word, testament ->
+                                viewModel.updateSearchQuery(word)
+                                viewModel.updateSelectedTestament(testament)
+                                viewModel.performSearch()
+                                activeTab = 0
+                            }
+                        )
+                    }
+                    2 -> {
+                        // NOTEBOOK TAB (Personal Exegetical Notes, Bookmarks & History)
+                        NotebookScreen(
+                            studiesWithNotes = studiesWithNotes,
+                            favorites = favorites,
+                            history = history,
+                            onSelectStudy = { study ->
+                                viewModel.setViewingStudy(study)
+                                activeTab = 0
+                            }
+                        )
+                    }
+                    3 -> {
+                        // SETTINGS TAB
+                        SettingsTab(
+                            activeProvider = activeProvider,
+                            geminiKey = geminiKey,
+                            claudeKey = claudeKey,
+                            groqKey = groqKey,
+                            grokKey = grokKey,
+                            useSearchGrounding = useSearchGrounding,
+                            onToggleSearchGrounding = { viewModel.toggleSearchGrounding(it) },
+                            strictVerification = strictVerification,
+                            onToggleStrictVerification = { viewModel.toggleStrictVerification(it) },
+                            onSaveSettings = { provider, gemini, claude, groq, grok ->
+                                viewModel.saveSettings(provider, gemini, claude, groq, grok)
+                            },
+                            onClearKeys = {
+                                viewModel.clearAllKeys()
+                            },
+                            isProUser = isProUser,
+                            onOpenPaywall = { isPaywallOpen = true },
+                            onOpenOnboarding = { isOnboardingOpen = true },
+                            onOpenLegal = { isLegalOpen = true },
+                            themeMode = themeMode,
+                            onToggleThemeMode = { viewModel.toggleThemeMode() }
+                        )
+                    }
                 }
-                2 -> {
-                    // SAVED/FAVORITES TAB
-                    FavoritesTab(
-                        favorites = favorites,
-                        onSelectStudy = { study ->
-                            viewModel.setViewingStudy(study)
-                            activeTab = 0 // Switch to hub to view it
-                        },
-                        onRemoveFavorite = { viewModel.toggleFavorite(it) }
-                    )
-                }
-                3 -> {
-                    // SETTINGS TAB
-                    SettingsTab(
-                        activeProvider = activeProvider,
-                        geminiKey = geminiKey,
-                        claudeKey = claudeKey,
-                        groqKey = groqKey,
-                        grokKey = grokKey,
-                        useSearchGrounding = useSearchGrounding,
-                        onToggleSearchGrounding = { viewModel.toggleSearchGrounding(it) },
-                        strictVerification = strictVerification,
-                        onToggleStrictVerification = { viewModel.toggleStrictVerification(it) },
-                        onSaveSettings = { provider, gemini, claude, groq, grok ->
-                            viewModel.saveSettings(provider, gemini, claude, groq, grok)
-                        },
-                        onClearKeys = {
-                            viewModel.clearAllKeys()
-                        }
-                    )
-                }
-            }
         }
     }
 
@@ -749,6 +861,37 @@ fun WordContextApp(
             onClose = { isChatOpen = false }
         )
     }
+
+    // Modal Sheets & Dialogs for Pro, Export, Onboarding, and Legal Policies
+    if (studyToExport != null) {
+        StudyExportSheet(
+            study = studyToExport!!,
+            onDismiss = { studyToExport = null }
+        )
+    }
+
+    if (isPaywallOpen) {
+        PaywallScreen(
+            isProUser = isProUser,
+            onSetProStatus = { viewModel.setProStatus(it) },
+            onClose = { isPaywallOpen = false }
+        )
+    }
+
+    if (isOnboardingOpen) {
+        OnboardingDialog(
+            onDismiss = {
+                isOnboardingOpen = false
+                viewModel.setHasSeenOnboarding(true)
+            }
+        )
+    }
+
+    if (isLegalOpen) {
+        LegalDisclosuresDialog(
+            onDismiss = { isLegalOpen = false }
+        )
+    }
 }
 }
 
@@ -771,7 +914,10 @@ fun StudyHubTab(
     onSendChatMessage: (String, WordStudy?) -> Unit,
     onResetChat: () -> Unit,
     onOpenChat: () -> Unit,
-    onRetrySearch: () -> Unit = {}
+    onRetrySearch: () -> Unit = {},
+    onReanalyzeStudy: ((WordStudy) -> Unit)? = null,
+    onOpenExport: (WordStudy) -> Unit = {},
+    onSaveNotes: (Long, String, List<String>) -> Unit = { _, _, _ -> }
 ) {
     var lastStudyId by remember { mutableStateOf(viewingStudy?.id) }
     LaunchedEffect(viewingStudy?.id) {
@@ -796,7 +942,10 @@ fun StudyHubTab(
                             onShare = { onShare(viewingStudy) },
                             onSearchWord = onSearchWord,
                             tts = tts,
-                            onOpenChat = onOpenChat
+                            onOpenChat = onOpenChat,
+                            onReanalyze = if (onReanalyzeStudy != null) { { onReanalyzeStudy(viewingStudy) } } else null,
+                            onOpenExport = { onOpenExport(viewingStudy) },
+                            onSaveNotes = onSaveNotes
                         )
                     } else {
                         // Prominent scholarly empty state
@@ -980,7 +1129,10 @@ fun StudyHubTab(
                         onShare = { onShare(state.wordStudy) },
                         onSearchWord = onSearchWord,
                         tts = tts,
-                        onOpenChat = onOpenChat
+                        onOpenChat = onOpenChat,
+                        onReanalyze = if (onReanalyzeStudy != null) { { onReanalyzeStudy(state.wordStudy) } } else null,
+                        onOpenExport = { onOpenExport(state.wordStudy) },
+                        onSaveNotes = onSaveNotes
                     )
                 }
                 is SearchUiState.Error -> {
@@ -1484,9 +1636,51 @@ fun WordStudyDetailView(
     onShare: () -> Unit,
     onSearchWord: (String) -> Unit,
     tts: android.speech.tts.TextToSpeech?,
-    onOpenChat: () -> Unit
+    onOpenChat: () -> Unit,
+    onReanalyze: (() -> Unit)? = null,
+    onOpenExport: () -> Unit = {},
+    onSaveNotes: (Long, String, List<String>) -> Unit = { _, _, _ -> }
 ) {
     val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+    var showReanalyzeConfirmDialog by remember { mutableStateOf(false) }
+
+    if (showReanalyzeConfirmDialog && onReanalyze != null) {
+        AlertDialog(
+            onDismissRequest = { showReanalyzeConfirmDialog = false },
+            title = {
+                Text(
+                    text = "Re-analyze with AI?",
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Serif
+                )
+            },
+            text = {
+                Text(
+                    text = "This will fetch a fresh, real-time AI philological analysis for \"${study.word}\" (${study.testament}) and update your offline database.",
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showReanalyzeConfirmDialog = false
+                        onReanalyze()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))
+                ) {
+                    Text("Re-analyze Now", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showReanalyzeConfirmDialog = false }) {
+                    Text("Cancel", color = Color(0xFF8B949E))
+                }
+            },
+            containerColor = Color(0xFF1E293B)
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -1518,12 +1712,41 @@ fun WordStudyDetailView(
                 )
             }
             
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (onReanalyze != null) {
+                    IconButton(
+                        onClick = { showReanalyzeConfirmDialog = true },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Re-analyze with AI",
+                            tint = Color(0xFF10B981),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
                 IconButton(onClick = onOpenChat, modifier = Modifier.size(40.dp)) {
                     Icon(
                         imageVector = Icons.Default.ChatBubbleOutline,
                         contentDescription = "Chat with AI",
                         tint = Color(0xFF38BDF8),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                IconButton(
+                    onClick = onOpenExport,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .testTag("detail_export_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.FileDownload,
+                        contentDescription = "Export Study",
+                        tint = Color(0xFF60A5FA),
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -1535,21 +1758,39 @@ fun WordStudyDetailView(
                         modifier = Modifier.size(20.dp)
                     )
                 }
+                IconButton(onClick = onToggleFavorite, modifier = Modifier.size(40.dp)) {
+                    Icon(
+                        imageVector = if (study.isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                        contentDescription = "Bookmark",
+                        tint = if (study.isFavorite) Color(0xFFFBBF24) else Color(0xFF8B949E),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
 
         // ==========================================
-        // 1. HORIZONTAL ELEGANT WORD DISPLAY
+        // 1. HORIZONTAL ELEGANT WORD DISPLAY (Ancient Manuscript Polish)
         // ==========================================
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF161B27)),
-            border = BorderStroke(1.dp, Color(0xFF21262D)),
-            shape = RoundedCornerShape(12.dp)
+                .padding(bottom = 18.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            border = BorderStroke(
+                1.5.dp, 
+                Brush.linearGradient(
+                    listOf(
+                        Color(0xFFD4AF37).copy(alpha = 0.6f),
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                    )
+                )
+            ),
+            shape = RoundedCornerShape(14.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(18.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -1560,29 +1801,41 @@ fun WordStudyDetailView(
                         horizontalArrangement = Arrangement.spacedBy(14.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        // Large Greek/Hebrew Word - completely horizontal and never vertical
-                        Text(
-                            text = study.originalWord,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily.Serif,
-                            color = Color(0xFFC9A84C)
-                        )
+                        // Ancient Script Typography (Hebrew Niqqud & Greek Polytonic clearance with golden glow)
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFD4AF37).copy(alpha = 0.12f))
+                                .border(1.dp, Color(0xFFD4AF37).copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = study.originalWord,
+                                style = com.example.ui.theme.AncientScriptStyle,
+                                color = Color(0xFFD4AF37)
+                            )
+                        }
                         
                         Column {
                             Text(
                                 text = study.transliteration,
-                                fontSize = 14.sp,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Serif,
-                                color = Color(0xFFF0F6FC)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(
-                                text = "Strong's ${study.strongsNumber}",
-                                fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace,
-                                color = Color(0xFF8B949E)
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "Strong's ${study.strongsNumber}",
+                                    fontSize = 11.5.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
 
                         // Speaker icon (pronunciation)
@@ -1605,7 +1858,7 @@ fun WordStudyDetailView(
                             Icon(
                                 imageVector = Icons.Outlined.VolumeUp,
                                 contentDescription = "Pronunciation",
-                                tint = if (isPlaying) Color(0xFFC9A84C) else Color(0xFF8B949E),
+                                tint = if (isPlaying) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -1629,35 +1882,40 @@ fun WordStudyDetailView(
                         Icon(
                             imageVector = if (isFavoriteActive) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = "Save Study",
-                            tint = if (isFavoriteActive) Color(0xFFD32F2F) else Color(0xFF8B949E),
+                            tint = if (isFavoriteActive) Color(0xFFEF4444) else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(24.dp)
                         )
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF0D1117), shape = RoundedCornerShape(8.dp))
-                        .border(1.dp, Color(0xFF21262D), shape = RoundedCornerShape(8.dp))
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            shape = RoundedCornerShape(10.dp)
+                        )
                         .padding(12.dp)
                 ) {
                     Column {
                         Text(
-                            text = "LITERAL MEANING",
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF8B949E),
-                            letterSpacing = 1.sp
+                            text = "LITERAL TRANSLATION",
+                            style = com.example.ui.theme.EpigraphicalBadgeStyle,
+                            color = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(3.dp))
                         Text(
                             text = study.literalMeaning,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFF0F6FC),
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontFamily = FontFamily.Serif
                         )
                     }
@@ -1737,84 +1995,162 @@ fun WordStudyDetailView(
         MorphologicalProfileCard(study = study)
 
         // ==========================================
-        // 2. NEW TESTAMENT / OLD TESTAMENT CORE SIGNIFICANCE
+        // 2 & 3. EPOCH CONTRAST: FIRST-CENTURY MEANING vs MODERN MISREADING
         // ==========================================
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF161B27)),
-            border = BorderStroke(1.dp, Color(0xFF21262D)),
-            shape = RoundedCornerShape(12.dp)
+                .padding(bottom = 18.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant),
+            shape = RoundedCornerShape(14.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.MenuBook,
-                        contentDescription = "Scholarly meaning",
-                        tint = Color(0xFFC9A84C),
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                // Section Title
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(
-                        text = "FIRST-CENTURY SCHOLARLY MEANING",
-                        fontSize = 11.sp,
+                        text = "THE HERMENEUTICAL SHIFT",
+                        style = com.example.ui.theme.EpigraphicalBadgeStyle,
+                        color = Color(0xFFD4AF37)
+                    )
+                    Text(
+                        text = "1ST CENTURY ➔ TODAY",
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFC9A84C),
-                        letterSpacing = 1.sp,
-                        fontFamily = FontFamily.Serif
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = study.thenMeaning,
-                    fontSize = 14.sp,
-                    lineHeight = 21.sp,
-                    color = Color(0xFFF0F6FC),
-                    fontFamily = FontFamily.Serif
-                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Antiquity Epoch Card (What It Meant Then)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    Color(0xFFD4AF37).copy(alpha = 0.12f),
+                                    Color(0xFFB45309).copy(alpha = 0.05f)
+                                )
+                            )
+                        )
+                        .border(1.dp, Color(0xFFD4AF37).copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+                        .padding(14.dp)
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(Color(0xFFD4AF37).copy(alpha = 0.2f), RoundedCornerShape(6.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.MenuBook,
+                                    contentDescription = "Ancient Context",
+                                    tint = Color(0xFFD4AF37),
+                                    modifier = Modifier.size(15.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "WHAT IT MEANT TO THE ORIGINAL HEARERS",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFD4AF37),
+                                    letterSpacing = 0.8.sp
+                                )
+                                Text(
+                                    text = "1st-Century Greco-Roman / Second Temple Mindset",
+                                    fontSize = 9.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = study.thenMeaning,
+                            fontSize = 14.sp,
+                            lineHeight = 22.sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontFamily = FontFamily.Serif
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Modern Contrast Card (What We Commonly Miss Today)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    Color(0xFFEF4444).copy(alpha = 0.08f),
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                )
+                            )
+                        )
+                        .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                        .padding(14.dp)
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(Color(0xFFEF4444).copy(alpha = 0.18f), RoundedCornerShape(6.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Warning,
+                                    contentDescription = "Modern Misreading",
+                                    tint = Color(0xFFEF4444),
+                                    modifier = Modifier.size(15.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "COMMON 21ST-CENTURY MISREADING",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFEF4444),
+                                    letterSpacing = 0.8.sp
+                                )
+                                Text(
+                                    text = "Western individualistic or anachronistic projection",
+                                    fontSize = 9.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = study.nowMeaning,
+                            fontSize = 13.5.sp,
+                            lineHeight = 20.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+                            fontFamily = FontFamily.Serif
+                        )
+                    }
+                }
             }
         }
 
         // ==========================================
-        // 3. COMMON MODERN MISREADING (Subtle Warning Styling)
+        // 3.5 PATRISTIC WITNESS (CHURCH FATHERS 100–450 AD)
         // ==========================================
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF161B27)),
-            border = BorderStroke(1.dp, Color(0x33EF4444)),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.Warning,
-                        contentDescription = "Warning",
-                        tint = Color(0xFFEF4444),
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "COMMON MODERN MISREADING",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFEF4444),
-                        letterSpacing = 0.8.sp,
-                        fontFamily = FontFamily.Serif
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = study.nowMeaning,
-                    fontSize = 13.5.sp,
-                    lineHeight = 20.sp,
-                    color = Color(0xFFF0F6FC),
-                    fontFamily = FontFamily.Serif
-                )
-            }
-        }
+        com.example.ui.components.PatristicWitnessCard(study = study)
 
         // ==========================================
         // 4. HISTORICAL CONTEXT CARD
@@ -2001,8 +2337,40 @@ fun WordStudyDetailView(
                             fontSize = 13.5.sp,
                             color = Color(0xFFF0F6FC),
                             fontFamily = FontFamily.Serif,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.weight(1f)
                         )
+                        Row {
+                            IconButton(
+                                onClick = {
+                                    clipboardManager.setText(AnnotatedString(verse))
+                                    Toast.makeText(context, "Copied $verse to clipboard", Toast.LENGTH_SHORT).show()
+                                },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = "Copy verse reference",
+                                    tint = Color(0xFF8B949E),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    onOpenChat()
+                                    // Pre-populate chat asking about this specific verse reference
+                                    Toast.makeText(context, "Analyzing $verse in research chat...", Toast.LENGTH_SHORT).show()
+                                },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ChatBubbleOutline,
+                                    contentDescription = "Ask AI about $verse",
+                                    tint = Color(0xFF38BDF8),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -2340,6 +2708,17 @@ fun WordStudyDetailView(
                 }
             )
         }
+
+        // ==========================================
+        // EXEGETICAL STUDY NOTES & SERMON WORKSPACE
+        // ==========================================
+        Spacer(modifier = Modifier.height(20.dp))
+        ExegeticalNotesSection(
+            study = study,
+            onSaveNotes = { notes, tags ->
+                onSaveNotes(study.id, notes, tags)
+            }
+        )
     }
 }
 
@@ -2447,14 +2826,32 @@ fun HistoryTab(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = study.word.uppercase(),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp,
-                                    fontFamily = FontFamily.Serif,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    letterSpacing = 0.5.sp
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = study.word.uppercase(),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        fontFamily = FontFamily.Serif,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        letterSpacing = 0.5.sp
+                                    )
+                                    if (study.hasLinguisticAnomaly) {
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .background(Color(0xFFF59E0B).copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                                .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.35f), RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = study.anomalyType.replace("_", "-"),
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFF59E0B)
+                                            )
+                                        }
+                                    }
+                                }
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "${study.originalWord} (${study.transliteration}) • ${study.testament}",
@@ -2548,14 +2945,32 @@ fun FavoritesTab(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = study.word.uppercase(),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp,
-                                    fontFamily = FontFamily.Serif,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    letterSpacing = 0.5.sp
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = study.word.uppercase(),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        fontFamily = FontFamily.Serif,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        letterSpacing = 0.5.sp
+                                    )
+                                    if (study.hasLinguisticAnomaly) {
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .background(Color(0xFFF59E0B).copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                                .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.35f), RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = study.anomalyType.replace("_", "-"),
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFF59E0B)
+                                            )
+                                        }
+                                    }
+                                }
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "${study.originalWord} (${study.transliteration}) • ${study.literalMeaning}",
@@ -2583,11 +2998,23 @@ fun FavoritesTab(
 }
 
 fun formatStudyForSharing(study: WordStudy): String {
+    val anomalySection = if (study.hasLinguisticAnomaly) {
+        """
+        
+        [⚠️ LINGUISTIC DISCONNECT ALERT]
+        Anomaly Type: ${study.anomalyType}
+        Root Word: ${study.anomalyRootWord} (${study.anomalyStrongsNumber})
+        Context Meaning: ${study.anomalyPrimaryMeaning}
+        Hidden Meaning: ${study.anomalyAlternateMeaning}
+        Takeaway / Wow Factor: ${study.anomalyWowFactor}
+        """.trimIndent()
+    } else ""
+
     return """
         BIBLE WORD STUDY: ${study.word.uppercase()} (${study.testament})
         Original word: ${study.originalWord} (${study.transliteration})
         Strong's: ${study.strongsNumber}
-        Literal translation: ${study.literalMeaning}
+        Literal translation: ${study.literalMeaning}$anomalySection
         
         [WHAT IT MEANT THEN]
         ${study.thenMeaning}
@@ -2646,7 +3073,13 @@ fun SettingsTab(
     strictVerification: Boolean = true,
     onToggleStrictVerification: (Boolean) -> Unit = {},
     onSaveSettings: (provider: String, gemini: String, claude: String, groq: String, grok: String) -> Unit,
-    onClearKeys: () -> Unit
+    onClearKeys: () -> Unit,
+    isProUser: Boolean = false,
+    onOpenPaywall: () -> Unit = {},
+    onOpenOnboarding: () -> Unit = {},
+    onOpenLegal: () -> Unit = {},
+    themeMode: com.example.ui.theme.AppThemeMode = com.example.ui.theme.AppThemeMode.MIDNIGHT,
+    onToggleThemeMode: () -> Unit = {}
 ) {
     var selectedProvider by remember { mutableStateOf(activeProvider) }
     var tempGemini by remember { mutableStateOf(geminiKey) }
@@ -2669,6 +3102,7 @@ fun SettingsTab(
     var showClearKeysDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val isScholarDesk = themeMode == com.example.ui.theme.AppThemeMode.SCHOLAR_DESK
 
     if (showSessionLogoutDialog) {
         AlertDialog(
@@ -2754,6 +3188,130 @@ fun SettingsTab(
             .fillMaxWidth()
             .padding(16.dp)
     ) {
+        // Study Environment & Lighting Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 14.dp)
+                .clickable { onToggleThemeMode() },
+            colors = CardDefaults.cardColors(
+                containerColor = if (isScholarDesk) Color(0xFFF3EEE4) else Color(0xFF111827)
+            ),
+            shape = RoundedCornerShape(14.dp),
+            border = BorderStroke(1.dp, if (isScholarDesk) Color(0xFFD4AF37) else Color(0xFF1E293B))
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .background(
+                                if (isScholarDesk) Color(0xFFB45309).copy(alpha = 0.15f) else Color(0xFF38BDF8).copy(alpha = 0.15f),
+                                RoundedCornerShape(10.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (isScholarDesk) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
+                            contentDescription = null,
+                            tint = if (isScholarDesk) Color(0xFFB45309) else Color(0xFF38BDF8),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = if (isScholarDesk) "Scholar's Desk (Daylight)" else "Midnight Sanctum (Night)",
+                            color = if (isScholarDesk) Color(0xFF1C1917) else Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            fontFamily = FontFamily.Serif
+                        )
+                        Text(
+                            text = if (isScholarDesk) "Warm manuscript parchment mode" else "Deep midnight glowing sanctuary mode",
+                            color = if (isScholarDesk) Color(0xFF57534E) else Color(0xFF94A3B8),
+                            fontSize = 11.5.sp
+                        )
+                    }
+                }
+                Switch(
+                    checked = isScholarDesk,
+                    onCheckedChange = { onToggleThemeMode() },
+                    modifier = Modifier.testTag("settings_theme_switch")
+                )
+            }
+        }
+        // Scholar Pro Membership Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+                .clickable { onOpenPaywall() }
+                .testTag("settings_pro_banner"),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isProUser) Color(0xFF064E3B) else Color(0xFF13233C)
+            ),
+            shape = RoundedCornerShape(14.dp),
+            border = BorderStroke(1.dp, if (isProUser) Color(0xFF10B981) else Color(0xFF38BDF8))
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .background(
+                                if (isProUser) Color(0xFF10B981).copy(alpha = 0.2f) else Color(0xFFF59E0B).copy(alpha = 0.2f),
+                                RoundedCornerShape(10.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (isProUser) Icons.Filled.Check else Icons.Filled.Star,
+                            contentDescription = null,
+                            tint = if (isProUser) Color(0xFF34D399) else Color(0xFFFBBF24),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = if (isProUser) "Scholar Pro Active" else "Scholar Pro Membership",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            fontFamily = FontFamily.Serif
+                        )
+                        Text(
+                            text = if (isProUser) "All sermon exports & personal notes unlocked" else "Tap to unlock sermon prep, notebook & exports",
+                            color = Color(0xFF94A3B8),
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+                Icon(
+                    imageVector = Icons.Outlined.ChevronRight,
+                    contentDescription = "Open",
+                    tint = Color(0xFF94A3B8)
+                )
+            }
+        }
+
         Text(
             text = "API CREDENTIALS & PROVIDERS",
             fontFamily = FontFamily.Serif,
@@ -3047,7 +3605,7 @@ fun SettingsTab(
 
         // Provider cards
         listOf(
-            Triple("Gemini", "Google", "gemini-3.5-flash (Fast & Stable)"),
+            Triple("Gemini", "Google", "gemini-flash-latest (Auto-Updating Latest Flash)"),
             Triple("Claude", "Anthropic", "claude-3-5-sonnet (Scholarly Context)"),
             Triple("Groq", "Groq Labs", "openai/gpt-oss-120b (Ultrafast OSS)"),
             Triple("Grok", "xAI (X)", "grok-2-1212 (Cutting-edge Reasoner)")
@@ -3422,6 +3980,56 @@ fun SettingsTab(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Store Policies & Hermeneutics Tour Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF131B2A)),
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, Color(0xFF25334D))
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Text(
+                    text = "STORE POLICIES & APP TOUR",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onOpenOnboarding() }
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Outlined.AutoStories, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(18.dp))
+                        Text("Replay App Tour & Hermeneutics", color = Color.White, fontSize = 13.sp)
+                    }
+                    Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(16.dp))
+                }
+                HorizontalDivider(color = Color(0xFF1E293B), thickness = 0.5.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onOpenLegal() }
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Outlined.Gavel, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(18.dp))
+                        Text("Privacy Policy, Terms & Disclosures", color = Color.White, fontSize = 13.sp)
+                    }
+                    Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(16.dp))
+                }
+            }
+        }
     }
 }
 
@@ -3716,11 +4324,48 @@ fun WordStudyChatView(
                     }
                 }
 
-                // Sleek discrete action buttons: Info & Reset
+                // Sleek discrete action buttons: Share, Info & Reset
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
+                    if (chatMessages.any { it.role != "user" }) {
+                        IconButton(
+                            onClick = {
+                                val transcript = buildString {
+                                    appendLine("📜 Biblical Philology Dialogue Transcript")
+                                    if (study != null) {
+                                        appendLine("Subject: ${study.word.uppercase()} (${study.originalWord} - ${study.transliteration})")
+                                    }
+                                    appendLine("────────────────────────────────────────")
+                                    chatMessages.forEach { m ->
+                                        val speaker = if (m.role == "user") "Question" else "Biblical Philologist"
+                                        appendLine("\n[$speaker]:\n${m.text}")
+                                    }
+                                    appendLine("\n────────────────────────────────────────")
+                                    appendLine("Generated by Word Context • Historical Exegesis Engine")
+                                }
+                                val sendIntent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_SUBJECT, if (study != null) "Word Study Dialogue: ${study.word}" else "Biblical Philology Dialogue")
+                                    putExtra(Intent.EXTRA_TEXT, transcript)
+                                    type = "text/plain"
+                                }
+                                context.startActivity(Intent.createChooser(sendIntent, "Share Chat Transcript"))
+                            },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .testTag("share_chat_transcript_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Share,
+                                contentDescription = "Share Dialogue Transcript",
+                                tint = Color(0xFF38BDF8),
+                                modifier = Modifier.size(19.dp)
+                            )
+                        }
+                    }
+
                     IconButton(
                         onClick = { showChatMethodologyDialog = true },
                         modifier = Modifier.size(36.dp)
@@ -4050,19 +4695,63 @@ fun WordStudyChatView(
                                                     )
                                                 }
 
-                                                IconButton(
-                                                    onClick = {
-                                                        clipboardManager.setText(AnnotatedString(message.text))
-                                                        Toast.makeText(context, "Response copied to clipboard", Toast.LENGTH_SHORT).show()
-                                                    },
-                                                    modifier = Modifier.size(24.dp)
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                                                 ) {
-                                                    Icon(
-                                                        imageVector = Icons.Outlined.ContentCopy,
-                                                        contentDescription = "Copy response",
-                                                        tint = Color(0xFF8B949E),
-                                                        modifier = Modifier.size(14.dp)
-                                                    )
+                                                    IconButton(
+                                                        onClick = {
+                                                            clipboardManager.setText(AnnotatedString(message.text))
+                                                            Toast.makeText(context, "AI response copied to clipboard", Toast.LENGTH_SHORT).show()
+                                                        },
+                                                        modifier = Modifier
+                                                            .size(32.dp)
+                                                            .testTag("copy_ai_response_top_button")
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Outlined.ContentCopy,
+                                                            contentDescription = "Copy AI response",
+                                                            tint = Color(0xFF94A3B8),
+                                                            modifier = Modifier.size(15.dp)
+                                                        )
+                                                    }
+
+                                                    IconButton(
+                                                        onClick = {
+                                                            val shareBody = buildString {
+                                                                appendLine("📜 Biblical Philologist Response")
+                                                                if (study != null) {
+                                                                    appendLine("Subject: ${study.word} (${study.originalWord})")
+                                                                }
+                                                                appendLine("──────────────────────────────")
+                                                                appendLine(message.text)
+                                                                if (message.isGrounded && message.sources.isNotEmpty()) {
+                                                                    appendLine("\n─── Audited Academic Sources ───")
+                                                                    message.sources.take(3).forEach { s ->
+                                                                        appendLine("• ${s.title}")
+                                                                    }
+                                                                }
+                                                                appendLine("\nShared from Word Context")
+                                                            }
+                                                            val sendIntent = Intent().apply {
+                                                                action = Intent.ACTION_SEND
+                                                                putExtra(Intent.EXTRA_SUBJECT, if (study != null) "Word Study: ${study.word}" else "Biblical Philology Response")
+                                                                putExtra(Intent.EXTRA_TEXT, shareBody)
+                                                                type = "text/plain"
+                                                            }
+                                                            context.startActivity(Intent.createChooser(sendIntent, "Share AI Response via"))
+                                                        },
+                                                        modifier = Modifier
+                                                            .size(32.dp)
+                                                            .testTag("share_ai_response_top_button")
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Outlined.Share,
+                                                            contentDescription = "Share AI response",
+                                                            tint = Color(0xFF38BDF8),
+                                                            modifier = Modifier.size(15.dp)
+                                                        )
+                                                    }
                                                 }
                                             }
 
@@ -4076,8 +4765,101 @@ fun WordStudyChatView(
                                             // Main Response Text with Rich Table Rendering
                                             PhilologicalChatBubbleText(
                                                 text = message.text,
-                                                modifier = Modifier.padding(14.dp)
+                                                modifier = Modifier.padding(start = 14.dp, top = 14.dp, end = 14.dp, bottom = 8.dp)
                                             )
+
+                                            // Prominent Copy & Share Action Pills for high discoverability
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                OutlinedButton(
+                                                    onClick = {
+                                                        clipboardManager.setText(AnnotatedString(message.text))
+                                                        Toast.makeText(context, "AI response copied to clipboard", Toast.LENGTH_SHORT).show()
+                                                    },
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .height(36.dp)
+                                                        .testTag("copy_ai_response_button"),
+                                                    shape = RoundedCornerShape(8.dp),
+                                                    border = BorderStroke(1.dp, Color(0xFF334155)),
+                                                    colors = ButtonDefaults.outlinedButtonColors(
+                                                        contentColor = Color(0xFFCBD5E1),
+                                                        containerColor = Color(0xFF0F172A).copy(alpha = 0.6f)
+                                                    ),
+                                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Outlined.ContentCopy,
+                                                        contentDescription = "Copy response",
+                                                        modifier = Modifier.size(13.dp),
+                                                        tint = Color(0xFF38BDF8)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                    Text(
+                                                        text = "Copy Response",
+                                                        fontSize = 11.5.sp,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = Color(0xFFE2E8F0)
+                                                    )
+                                                }
+
+                                                Button(
+                                                    onClick = {
+                                                        val shareBody = buildString {
+                                                            appendLine("📜 Biblical Philologist Response")
+                                                            if (study != null) {
+                                                                appendLine("Subject: ${study.word} (${study.originalWord} - ${study.transliteration})")
+                                                            }
+                                                            appendLine("──────────────────────────────")
+                                                            appendLine(message.text)
+                                                            if (message.isGrounded && message.sources.isNotEmpty()) {
+                                                                appendLine("\n─── Audited Sources ───")
+                                                                message.sources.take(3).forEach { s ->
+                                                                    appendLine("• ${s.title}")
+                                                                }
+                                                            }
+                                                            appendLine("\nShared from Word Context • Historical Exegesis Engine")
+                                                        }
+                                                        val sendIntent = Intent().apply {
+                                                            action = Intent.ACTION_SEND
+                                                            putExtra(Intent.EXTRA_SUBJECT, if (study != null) "Word Study: ${study.word}" else "Biblical Philology Response")
+                                                            putExtra(Intent.EXTRA_TEXT, shareBody)
+                                                            type = "text/plain"
+                                                        }
+                                                        context.startActivity(Intent.createChooser(sendIntent, "Share AI Response via"))
+                                                    },
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .height(36.dp)
+                                                        .testTag("share_ai_response_button"),
+                                                    shape = RoundedCornerShape(8.dp),
+                                                    colors = ButtonDefaults.buttonColors(
+                                                        containerColor = Color(0xFF1E3A8A).copy(alpha = 0.85f),
+                                                        contentColor = Color.White
+                                                    ),
+                                                    border = BorderStroke(1.dp, Color(0xFF3B82F6).copy(alpha = 0.6f)),
+                                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Outlined.Share,
+                                                        contentDescription = "Share response",
+                                                        modifier = Modifier.size(13.dp),
+                                                        tint = Color(0xFF93C5FD)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                    Text(
+                                                        text = "Share Response",
+                                                        fontSize = 11.5.sp,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = Color.White
+                                                    )
+                                                }
+                                            }
 
                                             // Unobtrusive Footer: Verification & Citations
                                             if (message.isGrounded || message.sources.isNotEmpty()) {

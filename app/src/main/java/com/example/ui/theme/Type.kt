@@ -74,3 +74,20 @@ val Typography =
         letterSpacing = 0.5.sp,
       )
   )
+
+// Ancient Script Typography (Hebrew Niqqud & Greek Polytonic clearance)
+val AncientScriptStyle = TextStyle(
+    fontFamily = FontFamily.Serif,
+    fontWeight = FontWeight.Bold,
+    fontSize = 32.sp,
+    lineHeight = 44.sp,
+    letterSpacing = 1.sp
+)
+
+val EpigraphicalBadgeStyle = TextStyle(
+    fontFamily = FontFamily.SansSerif,
+    fontWeight = FontWeight.Bold,
+    fontSize = 10.sp,
+    lineHeight = 14.sp,
+    letterSpacing = 1.2.sp
+)

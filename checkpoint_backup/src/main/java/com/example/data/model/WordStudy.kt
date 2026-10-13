@@ -26,5 +26,16 @@ data class WordStudy(
     val closingInsight: String,
     val timestamp: Long = System.currentTimeMillis(),
     val isFavorite: Boolean = false,
-    val searchGroundingSources: List<String> = emptyList()
+    val searchGroundingSources: List<String> = emptyList(),
+    val rootLemma: String = "",
+    val morphologicalFamilyTable: String = "",
+    val translationDisconnect: String = "",
+    val hasLinguisticAnomaly: Boolean = false,
+    val anomalyType: String = "", // "HOMONYM", "CONTRONYM", or "SPLIT_TRANSLATION"
+    val anomalyRootWord: String = "",
+    val anomalyStrongsNumber: String = "",
+    val anomalyPrimaryMeaning: String = "",
+    val anomalyAlternateMeaning: String = "",
+    val anomalyComparisonTable: String = "",
+    val anomalyWowFactor: String = ""
 )

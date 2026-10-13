@@ -1,21 +1,21 @@
 package com.example.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme =
+enum class AppThemeMode(val displayName: String) {
+    MIDNIGHT("Midnight Sanctum"),
+    SCHOLAR_DESK("Scholar's Desk")
+}
+
+private val MidnightColorScheme =
   darkColorScheme(
     primary = SacredGold,
     secondary = SlateGrey,
-    tertiary = SacredGold,
+    tertiary = AncientGold,
     background = DarkNavyBg,
     surface = DarkNavySurface,
     onPrimary = DarkNavyBg,
@@ -23,40 +23,33 @@ private val DarkColorScheme =
     onTertiary = DarkNavyBg,
     onBackground = PaleParchment,
     onSurface = PaleParchment,
-    surfaceVariant = Color(0xFF1E293B)
+    surfaceVariant = Color(0xFF161B27)
   )
 
-private val LightColorScheme =
+private val ScholarDeskColorScheme =
   lightColorScheme(
-    primary = SacredGold,
-    secondary = SlateGrey,
-    tertiary = SacredGold,
-    background = DarkNavyBg,
-    surface = DarkNavySurface,
-    onPrimary = DarkNavyBg,
-    onSecondary = PaleParchment,
-    onTertiary = DarkNavyBg,
-    onBackground = PaleParchment,
-    onSurface = PaleParchment,
-    surfaceVariant = Color(0xFF1E293B)
+    primary = ScholarDeskPrimary,
+    secondary = ScholarDeskTextSecondary,
+    tertiary = ScholarDeskGold,
+    background = ScholarDeskBg,
+    surface = ScholarDeskSurface,
+    onPrimary = Color.White,
+    onSecondary = ScholarDeskTextPrimary,
+    onTertiary = Color.White,
+    onBackground = ScholarDeskTextPrimary,
+    onSurface = ScholarDeskTextPrimary,
+    surfaceVariant = ScholarDeskSurfaceVariant
   )
 
 @Composable
 fun MyApplicationTheme(
-  darkTheme: Boolean = isSystemInDarkTheme(),
-  dynamicColor: Boolean = false,
+  themeMode: AppThemeMode = AppThemeMode.MIDNIGHT,
   content: @Composable () -> Unit,
 ) {
-  val colorScheme =
-    when {
-      dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-        val context = LocalContext.current
-        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-      }
-
-      darkTheme -> DarkColorScheme
-      else -> LightColorScheme
-    }
+  val colorScheme = when (themeMode) {
+      AppThemeMode.MIDNIGHT -> MidnightColorScheme
+      AppThemeMode.SCHOLAR_DESK -> ScholarDeskColorScheme
+  }
 
   MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
 }

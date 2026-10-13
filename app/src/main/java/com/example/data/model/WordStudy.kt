@@ -37,5 +37,7 @@ data class WordStudy(
     val anomalyPrimaryMeaning: String = "",
     val anomalyAlternateMeaning: String = "",
     val anomalyComparisonTable: String = "",
-    val anomalyWowFactor: String = ""
+    val anomalyWowFactor: String = "",
+    val userNotes: String = "",
+    val userTags: List<String> = emptyList()
 )

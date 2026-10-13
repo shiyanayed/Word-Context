@@ -31,6 +31,11 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
 
     val allWordStudies: Flow<List<WordStudy>> = wordStudyDao.getAllWordStudies()
     val favoriteWordStudies: Flow<List<WordStudy>> = wordStudyDao.getFavoriteWordStudies()
+    val wordStudiesWithNotes: Flow<List<WordStudy>> = wordStudyDao.getWordStudiesWithNotes()
+
+    suspend fun updateUserNotes(id: Long, notes: String, tags: List<String>) = withContext(Dispatchers.IO) {
+        wordStudyDao.updateUserNotes(id, notes, tags)
+    }
 
     private val moshi = Moshi.Builder()
         .addLast(KotlinJsonAdapterFactory())
@@ -65,19 +70,20 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
         word: String, 
         testament: String,
         activeProvider: String = "Gemini",
-        userApiKey: String = ""
+        userApiKey: String = "",
+        forceRefresh: Boolean = false
     ): WordStudy = withContext(Dispatchers.IO) {
         val cleanedWord = word.trim()
         val cleanedTestament = testament.trim()
 
-        // 1. Check database cache first - strictly isolate by testament if specified
+        // 1. Check database cache first if not force-refreshing - strictly isolate by testament if specified
         val cached = if (cleanedTestament.isNotBlank()) {
             wordStudyDao.getWordStudyByWordAndTestament(cleanedWord, cleanedTestament)
         } else {
             wordStudyDao.getWordStudyAnyTestament(cleanedWord)
         }
 
-        if (cached != null) {
+        if (!forceRefresh && cached != null) {
             val anomalyInfo = com.example.data.local.LinguisticAnomalyHelper.resolveAnomaly(cached)
             val updated = if (!cached.hasLinguisticAnomaly && anomalyInfo != null) {
                 cached.copy(
@@ -98,8 +104,8 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
             return@withContext updated
         }
 
-        // 2. Check curated scholarly database matching the requested testament
-        val curated = CuratedWordStudies.getCuratedStudy(cleanedWord, cleanedTestament)
+        // 2. Check curated scholarly database matching the requested testament if not force-refreshing
+        val curated = if (!forceRefresh) CuratedWordStudies.getCuratedStudy(cleanedWord, cleanedTestament) else null
         if (curated != null && (cleanedTestament.isBlank() || curated.testament.equals(cleanedTestament, ignoreCase = true))) {
             val anomalyInfo = com.example.data.local.LinguisticAnomalyHelper.resolveAnomaly(curated)
             val toSave = curated.copy(
@@ -203,8 +209,10 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
 
                     // Resilient model list with fallback in case of high demand / 503
                     val modelsToTry = listOf(
-                        "gemini-3.5-flash",
                         "gemini-flash-latest",
+                        "gemini-3.8-flash",
+                        "gemini-3.6-flash",
+                        "gemini-3.5-flash",
                         "gemini-3.1-flash-lite-preview",
                         "gemini-3.1-pro-preview"
                     )
@@ -441,6 +449,8 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
             val finalWowFactor = parsedStudy.anomalyWowFactor.ifBlank { parsedAnomaly?.wowFactor ?: "" }
 
             val wordStudyToSave = parsedStudy.copy(
+                id = cached?.id ?: 0L,
+                isFavorite = cached?.isFavorite ?: parsedStudy.isFavorite,
                 word = cleanedWord,
                 testament = cleanedTestament,
                 timestamp = System.currentTimeMillis(),
@@ -458,7 +468,7 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
                 anomalyWowFactor = finalWowFactor
             )
             val id = wordStudyDao.insertWordStudy(wordStudyToSave)
-            return@withContext wordStudyToSave.copy(id = id)
+            return@withContext wordStudyToSave.copy(id = if (cached != null) cached.id else id)
 
         } catch (e: Exception) {
             // Check curated fallback again as reliable offline recovery
@@ -618,8 +628,10 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
                     }
 
                     val modelsToTry = listOf(
-                        "gemini-3.5-flash",
                         "gemini-flash-latest",
+                        "gemini-3.8-flash",
+                        "gemini-3.6-flash",
+                        "gemini-3.5-flash",
                         "gemini-3.1-flash-lite-preview",
                         "gemini-3.1-pro-preview"
                     )
