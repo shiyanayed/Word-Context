@@ -4,8 +4,13 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.BuildConfig
+import com.example.data.apologetics.ApologeticsCategory
+import com.example.data.apologetics.ApologeticsDossier
+import com.example.data.apologetics.ApologeticsEntity
+import com.example.data.apologetics.CuratedApologeticsLibrary
 import com.example.data.local.AppDatabase
 import com.example.data.model.WordStudy
+import com.example.data.repository.HistoricalApologeticsRepository
 import com.example.data.repository.WordStudyRepository
 import com.example.data.verification.GroundingSource
 import com.example.data.verification.SourceTrustVerifier
@@ -28,6 +33,7 @@ class WordStudyViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val db = AppDatabase.getDatabase(application)
     private val repository = WordStudyRepository(db.wordStudyDao())
+    private val apologeticsRepo = HistoricalApologeticsRepository(db.apologeticsDao())
     private val settingDao = db.appSettingDao()
 
     // SharedPreferences for multi-provider API keys
@@ -234,6 +240,107 @@ class WordStudyViewModel(application: Application) : AndroidViewModel(applicatio
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    val savedApologetics: StateFlow<List<ApologeticsEntity>> = apologeticsRepo.savedDossiers
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val bookmarkedApologetics: StateFlow<List<ApologeticsEntity>> = apologeticsRepo.bookmarkedDossiers
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    private val _apologeticsQuery = MutableStateFlow("")
+    val apologeticsQuery: StateFlow<String> = _apologeticsQuery.asStateFlow()
+
+    private val _selectedApologeticsCategory = MutableStateFlow<ApologeticsCategory?>(null)
+    val selectedApologeticsCategory: StateFlow<ApologeticsCategory?> = _selectedApologeticsCategory.asStateFlow()
+
+    private val _selectedDossier = MutableStateFlow<ApologeticsDossier?>(null)
+    val selectedDossier: StateFlow<ApologeticsDossier?> = _selectedDossier.asStateFlow()
+
+    private val _apologeticsLoading = MutableStateFlow(false)
+    val apologeticsLoading: StateFlow<Boolean> = _apologeticsLoading.asStateFlow()
+
+    private val _apologeticsError = MutableStateFlow<String?>(null)
+    val apologeticsError: StateFlow<String?> = _apologeticsError.asStateFlow()
+
+    fun updateApologeticsQuery(query: String) {
+        _apologeticsQuery.value = query
+    }
+
+    fun selectApologeticsCategory(category: ApologeticsCategory?) {
+        _selectedApologeticsCategory.value = category
+    }
+
+    fun selectApologeticsDossier(dossier: ApologeticsDossier?) {
+        _selectedDossier.value = dossier
+    }
+
+    fun toggleBookmarkApologetics(dossier: ApologeticsDossier) {
+        viewModelScope.launch {
+            val newStatus = !dossier.isBookmarked
+            apologeticsRepo.toggleBookmark(dossier.id, newStatus)
+            apologeticsRepo.saveDossier(dossier.copy(isBookmarked = newStatus))
+            if (_selectedDossier.value?.id == dossier.id) {
+                _selectedDossier.value = _selectedDossier.value?.copy(isBookmarked = newStatus)
+            }
+        }
+    }
+
+    fun saveApologeticsNotes(id: String, notes: String) {
+        viewModelScope.launch {
+            apologeticsRepo.updateNotes(id, notes)
+            if (_selectedDossier.value?.id == id) {
+                _selectedDossier.value = _selectedDossier.value?.copy(userPersonalNotes = notes)
+            }
+        }
+    }
+
+    fun deleteApologeticsDossier(id: String) {
+        viewModelScope.launch {
+            apologeticsRepo.deleteDossier(id)
+            if (_selectedDossier.value?.id == id) {
+                _selectedDossier.value = null
+            }
+        }
+    }
+
+    fun generateApologeticsDefense(query: String) {
+        if (query.isBlank()) return
+        _apologeticsLoading.value = true
+        _apologeticsError.value = null
+        viewModelScope.launch {
+            try {
+                val provider = _activeProvider.value
+                val apiKey = when (provider) {
+                    "Gemini" -> _geminiKey.value
+                    "Claude" -> _claudeKey.value
+                    "Groq" -> _groqKey.value
+                    "Grok" -> _grokKey.value
+                    else -> ""
+                }
+                val resultDossier = apologeticsRepo.generateDefense(
+                    query = query,
+                    activeProvider = provider,
+                    userApiKey = apiKey,
+                    useSearchGrounding = _useSearchGrounding.value,
+                    strictVerification = _strictVerification.value
+                )
+                apologeticsRepo.saveDossier(resultDossier)
+                _selectedDossier.value = resultDossier
+            } catch (e: Exception) {
+                _apologeticsError.value = e.localizedMessage ?: "Failed to generate defense."
+            } finally {
+                _apologeticsLoading.value = false
+            }
+        }
+    }
 
     private val _isProUser = MutableStateFlow(prefs.getBoolean("is_pro_user", false))
     val isProUser: StateFlow<Boolean> = _isProUser.asStateFlow()

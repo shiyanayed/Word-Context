@@ -107,7 +107,14 @@ fun WordContextApp(
     val hasSeenOnboarding by viewModel.hasSeenOnboarding.collectAsState()
     val themeMode by viewModel.themeMode.collectAsState()
 
-    var activeTab by remember { mutableStateOf(0) } // 0: Hub, 1: Lexicon, 2: Notebook, 3: Settings
+    val apologeticsQuery by viewModel.apologeticsQuery.collectAsState()
+    val selectedApologeticsCategory by viewModel.selectedApologeticsCategory.collectAsState()
+    val selectedDossier by viewModel.selectedDossier.collectAsState()
+    val apologeticsLoading by viewModel.apologeticsLoading.collectAsState()
+    val apologeticsError by viewModel.apologeticsError.collectAsState()
+    val savedApologetics by viewModel.savedApologetics.collectAsState()
+
+    var activeTab by remember { mutableStateOf(0) } // 0: Hub, 1: Apologetics, 2: Lexicon, 3: Notebook, 4: Settings
     var isChatOpen by remember { mutableStateOf(false) }
     var isPaywallOpen by remember { mutableStateOf(false) }
     var isLegalOpen by remember { mutableStateOf(false) }
@@ -360,9 +367,10 @@ fun WordContextApp(
                 ) {
                     listOf(
                         Triple(0, Icons.Outlined.Search, "Study Hub"),
-                        Triple(1, Icons.Outlined.MenuBook, "Lexicon"),
-                        Triple(2, Icons.Outlined.EditNote, "Notebook"),
-                        Triple(3, Icons.Outlined.Settings, "Settings")
+                        Triple(1, Icons.Outlined.Shield, "Apologetics"),
+                        Triple(2, Icons.Outlined.MenuBook, "Lexicon"),
+                        Triple(3, Icons.Outlined.EditNote, "Notebook"),
+                        Triple(4, Icons.Outlined.Settings, "Settings")
                     ).forEach { (tabIndex, iconVector, labelText) ->
                         val isSelected = activeTab == tabIndex
                         val tabColor = if (isSelected) {
@@ -372,9 +380,10 @@ fun WordContextApp(
                         }
                         val tabTag = when (tabIndex) {
                             0 -> "nav_study_hub"
-                            1 -> "nav_lexicon"
-                            2 -> "nav_notebook"
-                            3 -> "nav_settings"
+                            1 -> "nav_apologetics"
+                            2 -> "nav_lexicon"
+                            3 -> "nav_notebook"
+                            4 -> "nav_settings"
                             else -> "nav_tab_$tabIndex"
                         }
                         NavigationBarItem(
@@ -408,14 +417,19 @@ fun WordContextApp(
             containerColor = Color.Transparent,
             modifier = modifier
         ) { innerPadding ->
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
             ) {
-                if (activeTab == 0) {
-                    if (viewingStudy == null && searchUiState is SearchUiState.Idle) {
+                when (activeTab) {
+                    0 -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            if (viewingStudy == null && searchUiState is SearchUiState.Idle) {
                         // DISPLAY THE ENTIRE HERO FORM MATCHING THE IMAGE EXACTLY
                         Column(
                             modifier = Modifier
@@ -740,13 +754,8 @@ fun WordContextApp(
                             }
                         }
                     }
-                } // End of if (activeTab == 0)
-    
-                // Main Display Tab Routing
-                when (activeTab) {
-                    0 -> {
-                        // STUDY HUB (Current or Selected Study result)
-                        StudyHubTab(
+                    // STUDY HUB (Current or Selected Study result)
+                    StudyHubTab(
                             searchUiState = searchUiState,
                             viewingStudy = viewingStudy,
                             onCloseDetail = { viewModel.setViewingStudy(null) },
@@ -777,7 +786,26 @@ fun WordContextApp(
                             onSaveNotes = { id, notes, tags -> viewModel.updateUserNotes(id, notes, tags) }
                         )
                     }
-                    1 -> {
+                }
+                1 -> {
+                        // APOLOGETICS TAB (Vetted Historical, Archaeological, and Patristic Defenses)
+                        ApologeticsScreen(
+                            searchQuery = apologeticsQuery,
+                            onSearchQueryChange = { viewModel.updateApologeticsQuery(it) },
+                            selectedCategory = selectedApologeticsCategory,
+                            onSelectCategory = { viewModel.selectApologeticsCategory(it) },
+                            selectedDossier = selectedDossier,
+                            onSelectDossier = { viewModel.selectApologeticsDossier(it) },
+                            onToggleBookmark = { viewModel.toggleBookmarkApologetics(it) },
+                            onSaveNotes = { id, notes -> viewModel.saveApologeticsNotes(id, notes) },
+                            onGenerateDefense = { query -> viewModel.generateApologeticsDefense(query) },
+                            isLoading = apologeticsLoading,
+                            errorMessage = apologeticsError,
+                            savedDossiers = savedApologetics,
+                            isScholarDesk = isScholarDesk
+                        )
+                    }
+                    2 -> {
                         // LEXICON TAB (100% Offline Strong's Concordance Base)
                         LexiconScreen(
                             onSelectWordForStudy = { word, testament ->
@@ -788,7 +816,7 @@ fun WordContextApp(
                             }
                         )
                     }
-                    2 -> {
+                    3 -> {
                         // NOTEBOOK TAB (Personal Exegetical Notes, Bookmarks & History)
                         NotebookScreen(
                             studiesWithNotes = studiesWithNotes,
@@ -800,31 +828,37 @@ fun WordContextApp(
                             }
                         )
                     }
-                    3 -> {
+                    4 -> {
                         // SETTINGS TAB
-                        SettingsTab(
-                            activeProvider = activeProvider,
-                            geminiKey = geminiKey,
-                            claudeKey = claudeKey,
-                            groqKey = groqKey,
-                            grokKey = grokKey,
-                            useSearchGrounding = useSearchGrounding,
-                            onToggleSearchGrounding = { viewModel.toggleSearchGrounding(it) },
-                            strictVerification = strictVerification,
-                            onToggleStrictVerification = { viewModel.toggleStrictVerification(it) },
-                            onSaveSettings = { provider, gemini, claude, groq, grok ->
-                                viewModel.saveSettings(provider, gemini, claude, groq, grok)
-                            },
-                            onClearKeys = {
-                                viewModel.clearAllKeys()
-                            },
-                            isProUser = isProUser,
-                            onOpenPaywall = { isPaywallOpen = true },
-                            onOpenOnboarding = { isOnboardingOpen = true },
-                            onOpenLegal = { isLegalOpen = true },
-                            themeMode = themeMode,
-                            onToggleThemeMode = { viewModel.toggleThemeMode() }
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            SettingsTab(
+                                activeProvider = activeProvider,
+                                geminiKey = geminiKey,
+                                claudeKey = claudeKey,
+                                groqKey = groqKey,
+                                grokKey = grokKey,
+                                useSearchGrounding = useSearchGrounding,
+                                onToggleSearchGrounding = { viewModel.toggleSearchGrounding(it) },
+                                strictVerification = strictVerification,
+                                onToggleStrictVerification = { viewModel.toggleStrictVerification(it) },
+                                onSaveSettings = { provider, gemini, claude, groq, grok ->
+                                    viewModel.saveSettings(provider, gemini, claude, groq, grok)
+                                },
+                                onClearKeys = {
+                                    viewModel.clearAllKeys()
+                                },
+                                isProUser = isProUser,
+                                onOpenPaywall = { isPaywallOpen = true },
+                                onOpenOnboarding = { isOnboardingOpen = true },
+                                onOpenLegal = { isLegalOpen = true },
+                                themeMode = themeMode,
+                                onToggleThemeMode = { viewModel.toggleThemeMode() }
+                            )
+                        }
                     }
                 }
         }
@@ -1616,7 +1650,7 @@ fun MorphologicalProfileCard(
                         color = Color(0xFF8B949E)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
+                    com.example.ui.components.FormattedMarkdownText(
                         text = philProfile.translationDisconnect,
                         fontSize = 13.sp,
                         lineHeight = 19.sp,
@@ -2075,7 +2109,7 @@ fun WordStudyDetailView(
                             }
                         }
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text(
+                        com.example.ui.components.FormattedMarkdownText(
                             text = study.thenMeaning,
                             fontSize = 14.sp,
                             lineHeight = 22.sp,
@@ -2135,7 +2169,7 @@ fun WordStudyDetailView(
                             }
                         }
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text(
+                        com.example.ui.components.FormattedMarkdownText(
                             text = study.nowMeaning,
                             fontSize = 13.5.sp,
                             lineHeight = 20.sp,
@@ -2192,7 +2226,7 @@ fun WordStudyDetailView(
                     letterSpacing = 0.5.sp
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
+                com.example.ui.components.FormattedMarkdownText(
                     text = study.historicalBackground,
                     fontSize = 13.5.sp,
                     lineHeight = 20.sp,
@@ -2210,7 +2244,7 @@ fun WordStudyDetailView(
                     letterSpacing = 0.5.sp
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
+                com.example.ui.components.FormattedMarkdownText(
                     text = study.culturalContext,
                     fontSize = 13.5.sp,
                     lineHeight = 20.sp,
@@ -2229,7 +2263,7 @@ fun WordStudyDetailView(
                     letterSpacing = 0.5.sp
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
+                com.example.ui.components.FormattedMarkdownText(
                     text = study.legalDimension,
                     fontSize = 13.5.sp,
                     lineHeight = 20.sp,
@@ -2269,7 +2303,7 @@ fun WordStudyDetailView(
                     )
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(
+                com.example.ui.components.FormattedMarkdownText(
                     text = study.theologicalWeight,
                     fontSize = 13.5.sp,
                     lineHeight = 20.sp,
@@ -2460,7 +2494,7 @@ fun WordStudyDetailView(
                     fontFamily = FontFamily.Serif
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
+                com.example.ui.components.FormattedMarkdownText(
                     text = study.closingInsight,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
@@ -4078,7 +4112,7 @@ fun PhilologicalChatBubbleText(
     }
 
     if (contentBlocks.isEmpty()) {
-        Text(
+        com.example.ui.components.FormattedMarkdownText(
             text = text,
             color = Color(0xFFF0F6FC),
             fontSize = 14.5.sp,
@@ -4196,7 +4230,7 @@ fun PhilologicalChatBubbleText(
                         }
                     }
                 } else {
-                    Text(
+                    com.example.ui.components.FormattedMarkdownText(
                         text = block,
                         color = Color(0xFFF0F6FC),
                         fontSize = 14.5.sp,
@@ -4205,7 +4239,7 @@ fun PhilologicalChatBubbleText(
                     )
                 }
             } else {
-                Text(
+                com.example.ui.components.FormattedMarkdownText(
                     text = block,
                     color = Color(0xFFF0F6FC),
                     fontSize = 14.5.sp,

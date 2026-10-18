@@ -142,4 +142,84 @@ class ExampleUnitTest {
         assertTrue(anomaly?.alternateMeaning?.contains("Justif", ignoreCase = true) == true)
         assertTrue(anomaly?.wowFactor?.contains("Latinate") == true || anomaly?.wowFactor?.contains("split") == true)
     }
+
+    @Test
+    fun testCuratedApologeticsLibraryContainsCoreDossiers() {
+        val dossiers = com.example.data.apologetics.CuratedApologeticsLibrary.allDossiers
+        assertTrue(dossiers.size >= 6)
+        assertTrue(dossiers.any { it.id == "apo_jesus_divinity" })
+        assertTrue(dossiers.any { it.id == "apo_archaeology_pilate_erastus" })
+        assertTrue(dossiers.any { it.id == "apo_pagan_myth_refutation" })
+        assertTrue(dossiers.any { it.id == "apo_council_nicaea_canon" })
+        assertTrue(dossiers.any { it.id == "apo_genealogies_matthew_luke" })
+    }
+
+    @Test
+    fun testApologeticsSearchFiltering() {
+        val pilateResults = com.example.data.apologetics.CuratedApologeticsLibrary.searchDossiers("Pilate")
+        assertTrue(pilateResults.isNotEmpty())
+        assertTrue(pilateResults.any { it.title.contains("Pilate") || it.archaeologicalEvidence.any { art -> art.artifactName.contains("Pilate") } })
+
+        val nicaeaResults = com.example.data.apologetics.CuratedApologeticsLibrary.searchDossiers("Nicaea")
+        assertTrue(nicaeaResults.isNotEmpty())
+        assertTrue(nicaeaResults.any { it.category == com.example.data.apologetics.ApologeticsCategory.CANON_AND_COUNCILS })
+    }
+
+    @Test
+    fun testApologeticsExportBriefFormatting() {
+        val dossier = com.example.data.apologetics.CuratedApologeticsLibrary.findById("apo_jesus_divinity")!!
+        val exported = com.example.ui.screens.buildFullApologeticsExportText(dossier)
+        assertTrue(exported.contains("HISTORICAL APOLOGETICS DEFENSE BRIEF"))
+        assertTrue(exported.contains("SKEPTICAL CLAIM"))
+        assertTrue(exported.contains("CORE HISTORICAL THESIS"))
+        assertTrue(exported.contains("QUICK DEBATE TAKEAWAYS"))
+    }
+
+    @Test
+    fun testCuratedApologeticsTheodicyAndHellDossiers() {
+        val evilDossier = com.example.data.apologetics.CuratedApologeticsLibrary.findById("apo_problem_of_evil_suffering")
+        assertNotNull(evilDossier)
+        assertEquals(com.example.data.apologetics.ApologeticsCategory.THEODICY_AND_SUFFERING, evilDossier?.category)
+        assertTrue(evilDossier?.detailedDefense?.contains("Free Will") == true)
+        assertTrue(evilDossier?.ancientHistoricalTexts?.any { it.author.contains("Irenaeus") } == true)
+
+        val hellDossier = com.example.data.apologetics.CuratedApologeticsLibrary.findById("apo_hell_divine_justice_love")
+        assertNotNull(hellDossier)
+        assertEquals(com.example.data.apologetics.ApologeticsCategory.JUDGMENT_AND_HELL, hellDossier?.category)
+        assertTrue(hellDossier?.detailedDefense?.contains("Gehenna") == true)
+        assertTrue(hellDossier?.detailedDefense?.contains("Lewis") == true)
+    }
+
+    @Test
+    fun testApologeticsSearchForProblemOfEvilAndHellQueries() {
+        // Query matching user's exact phrase: "why does He send people to hell"
+        val hellQuery = "why does He send people to hell"
+        val hellResults = com.example.data.apologetics.CuratedApologeticsLibrary.searchDossiers(hellQuery)
+        assertTrue(hellResults.isNotEmpty())
+        assertEquals("apo_hell_divine_justice_love", hellResults.first().id)
+
+        // Query matching user's exact phrase: "allow bad things happen to good people"
+        val evilQuery = "allow bad things happen to good people"
+        val evilResults = com.example.data.apologetics.CuratedApologeticsLibrary.searchDossiers(evilQuery)
+        assertTrue(evilResults.isNotEmpty())
+        assertEquals("apo_problem_of_evil_suffering", evilResults.first().id)
+    }
+
+    @Test
+    fun testMarkdownHelperStripsRawTripleAsterisks() {
+        val sampleWithTripleAsterisks = """
+            ***First-Century Exegesis***
+            In ancient Roman law, ***adoptio*** was a legal transfer.
+            ***
+            Here is the conclusion.
+        """.trimIndent()
+
+        val formatted = com.example.ui.components.MarkdownTextHelper.cleanAndFormatMarkdown(sampleWithTripleAsterisks)
+        val text = formatted.text
+
+        // Verify that literal *** does not exist in the output text
+        assertFalse("Output should not contain '***'", text.contains("***"))
+        assertTrue("Output should contain 'First-Century Exegesis'", text.contains("First-Century Exegesis"))
+        assertTrue("Output should contain 'adoptio'", text.contains("adoptio"))
+    }
 }

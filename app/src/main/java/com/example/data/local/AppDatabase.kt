@@ -5,13 +5,15 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.data.apologetics.ApologeticsEntity
 import com.example.data.model.WordStudy
 
-@Database(entities = [WordStudy::class, AppSetting::class], version = 6, exportSchema = false)
+@Database(entities = [WordStudy::class, AppSetting::class, ApologeticsEntity::class], version = 7, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun wordStudyDao(): WordStudyDao
     abstract fun appSettingDao(): AppSettingDao
+    abstract fun apologeticsDao(): ApologeticsDao
 
     companion object {
         @Volatile

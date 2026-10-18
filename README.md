@@ -1,6 +1,6 @@
 # Word Context 📜 — Master System Blueprint & Reconstruction Specification
 
-> **A Definitive Technical, Architectural, and Domain Specification for Reconstructing the Word Context Historical Biblical Exegesis Application**
+> **A Definitive Technical, Architectural, and Domain Specification for Reconstructing the Word Context Historical Biblical Exegesis & Apologetics Application**
 
 ---
 
@@ -10,40 +10,44 @@
 3. [Build System, Gradle Configuration & Version Catalog](#3-build-system-gradle-configuration--version-catalog)
 4. [AndroidManifest, Permissions & Platform Metadata](#4-androidmanifest-permissions--platform-metadata)
 5. [Design System & Jetpack Compose Theming Specification](#5-design-system--jetpack-compose-theming-specification)
-6. [Domain Models & Room Database Architecture](#6-domain-models--room-database-architecture)
-7. [Offline Curated Knowledge Bases & Epigraphic Corpus](#7-offline-curated-knowledge-bases--epigraphic-corpus)
-8. [Anti-Hallucination & Epigraphical Verification Engine](#8-anti-hallucination--epigraphical-verification-engine)
-9. [Networking, Multi-Provider Architecture & AI Pipeline](#9-networking-multi-provider-architecture--ai-pipeline)
-10. [Repository Layer & Offline-First Data Orchestration](#10-repository-layer--offline-first-data-orchestration)
-11. [ViewModel & Reactive State Management](#11-viewmodel--reactive-state-management)
-12. [UI Components & Interactive Subsystems](#12-ui-components--interactive-subsystems)
-13. [Primary Screens & Navigation Architecture](#13-primary-screens--navigation-architecture)
-14. [Sharing, Copying & Export System Specification](#14-sharing-copying--export-system-specification)
-15. [Step-by-Step Reconstruction Manual for Autonomous AI](#15-step-by-step-reconstruction-manual-for-autonomous-ai)
-16. [Verification, Testing & Developer Maintenance Contract](#16-verification-testing--developer-maintenance-contract)
+6. [Domain Models & Room Database Architecture (v7)](#6-domain-models--room-database-architecture-v7)
+7. [Offline Curated Exegesis & Concordance Knowledge Bases](#7-offline-curated-exegesis--concordance-knowledge-bases)
+8. [Historical Apologetics Architecture & Defense Engine](#8-historical-apologetics-architecture--defense-engine)
+9. [Anti-Hallucination & Epigraphical Verification Engine](#9-anti-hallucination--epigraphical-verification-engine)
+10. [Networking, Multi-Provider Architecture & AI Pipeline](#10-networking-multi-provider-architecture--ai-pipeline)
+11. [Repository Layer & Offline-First Data Orchestration](#11-repository-layer--offline-first-data-orchestration)
+12. [ViewModel & Reactive State Management](#12-viewmodel--reactive-state-management)
+13. [UI Components & Interactive Subsystems](#13-ui-components--interactive-subsystems)
+14. [Primary Screens & 5-Tab Navigation Architecture](#14-primary-screens--5-tab-navigation-architecture)
+15. [Sharing, Copying & Export System Specification](#15-sharing-copying--export-system-specification)
+16. [Step-by-Step Reconstruction Manual for Autonomous AI](#16-step-by-step-reconstruction-manual-for-autonomous-ai)
+17. [Verification, Testing & Developer Maintenance Contract](#17-verification-testing--developer-maintenance-contract)
 
 ---
 
 ## 1. Executive Product Vision & Historical Mission
 
-### 1.1 The Core Problem: Modern Linguistic Drift
+### 1.1 The Core Problem: Modern Linguistic Drift & Skeptical Anachronism
 Every modern Bible reader reads ancient Scripture through centuries of European cultural filters, post-Enlightenment rationalism, and Victorian moral abstractions. Common theological terms have suffered profound semantic drift:
 * **"Righteousness"** is misconstrued as solitary moral purity or self-righteous piety, when in the 1st century it signified covenantal faithfulness, judicial equity, and relational fidelity in civic Roman and Second Temple legal environments.
 * **"Peace"** (*Eirene* / *Shalom*) is viewed as an internal emotional tranquility, contrasting sharply with the imperial *Pax Romana* (peace through imperial conquest and subjugation) and biblical *Shalom* (communal wholeness, systemic justice, and social flourishing).
 * **"Faith"** (*Pistis* / *Emunah*) has been reduced to passive intellectual assent ("believing without evidence"), when in antiquity it demanded active political and covenantal allegiance, loyalty, and fidelity to a sovereign King.
 * **"Grace"** (*Charis*) is frequently taught as unconditional benevolence without obligation, whereas in the Greco-Roman patron-client framework, *charis* was a gracious unearned gift that established a lifelong mutual bond of loyalty between Benefactor and Client.
 
+Furthermore, **modern internet skepticism and biblical objections** routinely stem from **historical anachronism**: imposing 21st-century Western expectations onto ancient Near Eastern, Second Temple Jewish, and Greco-Roman texts, leading to claims that passages are "contradictory," "borrowed from pagan myths," or "morally barbaric."
+
 ### 1.2 The Solution: "Word Context"
-**Word Context** is a production-grade, offline-first Android application designed to immerse scholars, pastors, students, and readers into the original **1st-century Near Eastern, Second Temple Jewish, and Greco-Roman** linguistic, cultural, and legal setting.
+**Word Context** is a production-grade, offline-first Android application designed to immerse scholars, pastors, students, and readers into the original **1st-century Near Eastern, Second Temple Jewish, and Greco-Roman** linguistic, cultural, and legal setting, while providing an integrated, rigorously vetted **Historical Apologetics Engine** grounded in archaeology, epigraphy, textual criticism, and patristic defenses.
 
 ### 1.3 Key Architectural Capabilities
 * **Offline-First Exegesis:** Comprehensive curated knowledge base of seminal New Testament Greek and Old Testament Hebrew words that functions 100% offline without network access.
+* **Historical Apologetics Hub:** Curated and AI-synthesized defense dossiers answering major skeptical challenges (Christ's deity, archaeological proof of Pilate and Erastus, pagan myth refutations, textual transmission reliability, Council of Nicaea, genealogical harmony, ancient Near Eastern war rhetoric, and early patristic defenses).
 * **100% Offline Strong's Concordance:** Exhaustive integrated Strong's Greek (NT) and Hebrew (OT) dictionary with search, morphology, and transliteration.
 * **Patristic Witness Archive (100–450 AD):** Primary historical quotations from Apostolic Fathers, Ante-Nicene Apologists, and Nicene Church Fathers, verifying how native ancient Greek and Latin speakers interpreted these terms before medieval scholastic shifts.
 * **Morphological Family Matrix:** Exposing original linguistic roots and word families that English translations splinter into unrelated words (e.g., Greek *dike*, *dikaios*, *dikaioo*, *dikaiosyne*).
 * **Linguistic Anomaly Engine:** Proactively flagging Contronyms (words meaning their own opposite), Homonyms, and critical translation disconnects.
 * **Anti-Hallucination Grounding Pipeline:** Dual verification system inspecting external citations, filtering out unverified blogs and forums, and enforcing a 90%+ academic and epigraphical trust threshold.
-* **Comprehensive Sharing & Copying:** One-tap clipboard copy and native Android Share Sheet intents for AI responses, full dialogue transcripts, church father citations, and multi-format sermon/academic study sheets.
+* **Comprehensive Sharing & Copying:** One-tap clipboard copy and native Android Share Sheet intents for AI responses, apologetics defense briefs, full dialogue transcripts, church father citations, and multi-format sermon/academic study sheets.
 
 ---
 
@@ -58,8 +62,12 @@ com.example/
 │   │   ├── GeminiApiService.kt            # Retrofit REST interface for Gemini API generateContent
 │   │   ├── GeminiModels.kt                # Moshi request & response schemas
 │   │   └── RetrofitClient.kt              # OkHttpClient (60s timeouts, logging interceptor)
+│   ├── apologetics/
+│   │   ├── HistoricalApologeticsModels.kt # Dossiers, Ancient Citations, Archaeology, Manuscripts, Patristics
+│   │   └── CuratedApologeticsLibrary.kt   # 8 Master curated peer-reviewed defense dossiers
 │   ├── local/
-│   │   ├── AppDatabase.kt                 # Room database (v6) with TypeConverters & migrations
+│   │   ├── ApologeticsDao.kt              # Room DAO for apologetics persistence, bookmarks, and notes
+│   │   ├── AppDatabase.kt                 # Room database (v7) with TypeConverters & migrations
 │   │   ├── AppSetting.kt                  # AppSetting Room Entity & AppSettingDao
 │   │   ├── Converters.kt                  # Moshi-backed Room TypeConverters for List<String>
 │   │   ├── CuratedWordStudies.kt          # Exhaustive offline seed word studies (NT Greek & OT Hebrew)
@@ -72,6 +80,7 @@ com.example/
 │   │   ├── StrongsEntry.kt                # Concordance lexical model
 │   │   └── WordStudy.kt                   # Core Room Entity & Moshi JSON data class
 │   ├── repository/
+│   │   ├── HistoricalApologeticsRepository.kt # Apologetics persistence & vetted AI defense generator
 │   │   └── WordStudyRepository.kt         # Single source of truth, cache-first coordination, AI prompts
 │   └── verification/
 │       └── SourceTrustVerifier.kt         # Domain trust scoring, tier classification & web filters
@@ -82,19 +91,22 @@ com.example/
 │   │   ├── PatristicWitnessCard.kt        # Church Fathers quotes, epoch chips, copy/share actions
 │   │   └── StudyExportSheet.kt            # 3-format export generator (Sermon, Paper, Quick Card)
 │   ├── screens/
+│   │   ├── ApologeticsDetailSheet.kt      # Full modal sheet for apologetic briefs, archaeology & notes
+│   │   ├── ApologeticsScreen.kt           # Apologetics Hub with category filters, search, and cards
+│   │   ├── AskApologeticsDialog.kt        # Interactive modal for asking AI any skeptical objection
 │   │   ├── LegalDisclosuresDialog.kt      # Hermeneutical methodology & anti-hallucination disclaimers
 │   │   ├── LexiconScreen.kt               # Strong's Concordance browser with NT/OT tabs
 │   │   ├── NotebookScreen.kt              # User's saved studies, favorites, tags & personal notes
 │   │   ├── OnboardingDialog.kt            # First-launch orientation to 1st-century exegesis
 │   │   ├── PaywallScreen.kt               # Developer mode & Pro subscription simulation
-│   │   └── WordContextApp.kt              # App shell, Scaffold, BottomNav, TopAppBar, Ask AI dialog
+│   │   └── WordContextApp.kt              # App shell, Scaffold, 5-Tab Navigation, TopAppBar, Ask AI dialog
 │   ├── theme/
 │   │   ├── Color.kt                       # Midnight Sanctum & Scholar's Desk tokens
 │   │   ├── Theme.kt                       # Material 3 theme wrapper supporting manual/dynamic modes
 │   │   └── Type.kt                        # Ancient serif, modern sans & monospace typography
 │   ├── ChatMessage.kt                     # Chat message model with sources & verification metadata
 │   ├── SearchUiState.kt                   # Sealed interface: Idle, Loading, Success, Error
-│   └── WordStudyViewModel.kt              # StateFlow management, dual persistence, TTS, AI chat
+│   └── WordStudyViewModel.kt              # StateFlow management, dual persistence, TTS, AI chat & apologetics
 └── MainActivity.kt                        # ComponentActivity, enableEdgeToEdge(), entry point
 ```
 
@@ -103,42 +115,28 @@ com.example/
 ## 3. Build System, Gradle Configuration & Version Catalog
 
 ### 3.1 Version Catalog (`gradle/libs.versions.toml`)
-The project utilizes Gradle's modern Version Catalog with Kotlin 2.2.10 and Compose Compiler plugin:
-
 ```toml
 [versions]
 agp = "9.1.1"
+kotlin = "2.2.10"
 coreKtx = "1.18.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
-lifecycleRuntimeKtx = "2.8.7"
-lifecycleViewmodelCompose = "2.8.7"
-lifecycleRuntimeCompose = "2.8.7"
-activityCompose = "1.10.1"
-kotlin = "2.2.10"
-composeBom = "2024.09.00"
-googleDevtoolsKsp = "2.3.5"
-navigationCompose = "2.8.9"
-roomRuntime = "2.7.0"
-roomKtx = "2.7.0"
-roomCompiler = "2.7.0"
-kotlinxCoroutinesTest = "1.10.2"
-core = "1.6.1"
-runner = "1.6.2"
-retrofit = "2.12.0"
-converterMoshi = "2.12.0"
-kotlinxCoroutinesAndroid = "1.10.2"
-kotlinxCoroutinesCore = "1.10.2"
-loggingInterceptor = "4.10.0"
-okhttp = "4.10.0"
-moshiKotlin = "1.15.2"
-moshiKotlinCodegen = "1.15.2"
+lifecycleRuntimeKtx = "2.10.0"
+activityCompose = "1.13.0"
+composeBom = "2026.03.00"
+room = "2.8.4"
+ksp = "2.2.10-2.0.2"
+moshi = "1.15.2"
+retrofit = "2.13.0"
+okhttp = "4.12.0"
+coroutines = "1.10.2"
+roborazzi = "1.46.1"
 robolectric = "4.16.1"
-roborazzi = "1.59.0"
-firebaseBom = "34.15.0"
-secretsGradlePlugin = "2.0.1"
-googleServices = "4.5.0"
+secretsPlugin = "2.0.1"
+googleServices = "4.4.4"
+firebaseBom = "34.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -146,8 +144,8 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
-androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
-androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
@@ -159,20 +157,23 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
-androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomRuntime" }
-androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
-androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshi" }
+moshi-kotlin-codegen = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshi" }
+converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofit" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
-converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "converterMoshi" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "loggingInterceptor" }
-moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshiKotlin" }
-moshi-kotlin-codegen = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshiKotlinCodegen" }
-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
-kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
-kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
-robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
+roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose", version.ref = "roborazzi" }
+roborazzi-junit-rule = { group = "io.github.takahirom.roborazzi", name = "roborazzi-junit-rule", version.ref = "roborazzi" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+androidx-core = { group = "androidx.test", name = "core", version = "1.7.0" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-ai = { group = "com.google.firebase", name = "firebase-ai" }
 firebase-appcheck-recaptcha = { group = "com.google.firebase", name = "firebase-appcheck-recaptcha" }
@@ -180,55 +181,20 @@ firebase-appcheck-recaptcha = { group = "com.google.firebase", name = "firebase-
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "googleDevtoolsKsp" }
+google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
-secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
+secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secretsPlugin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 ```
 
 ### 3.2 Root Settings (`settings.gradle.kts`)
 ```kotlin
-pluginManagement {
-  repositories {
-    google {
-      content {
-        includeGroupByRegex("com\\.android.*")
-        includeGroupByRegex("com\\.google.*")
-        includeGroupByRegex("androidx.*")
-      }
-    }
-    mavenCentral()
-    gradlePluginPortal()
-  }
-}
-
-plugins { id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0" }
-
-dependencyResolutionManagement {
-  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-  repositories {
-    google()
-    mavenCentral()
-  }
-}
-
 rootProject.name = "Word Context"
 include(":app")
 ```
 
 ### 3.3 App-Level Build Script (`app/build.gradle.kts`)
 ```kotlin
-import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
-
-plugins {
-  alias(libs.plugins.android.application)
-  alias(libs.plugins.kotlin.compose)
-  alias(libs.plugins.google.devtools.ksp)
-  alias(libs.plugins.roborazzi)
-  alias(libs.plugins.secrets)
-  alias(libs.plugins.google.services)
-}
-
 android {
   namespace = "com.example"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
@@ -241,100 +207,6 @@ android {
     versionName = "1.0"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
-
-  signingConfigs {
-    create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
-    }
-    create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
-    }
-  }
-
-  buildTypes {
-    release {
-      isCrunchPngs = false
-      isMinifyEnabled = false
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
-    }
-    debug {
-      signingConfig = signingConfigs.getByName("debugConfig")
-    }
-  }
-
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-  }
-
-  buildFeatures {
-    compose = true
-    buildConfig = true
-  }
-
-  testOptions { 
-    unitTests { isIncludeAndroidResources = true } 
-  }
-}
-
-secrets {
-  propertiesFileName = ".env"
-  defaultPropertiesFileName = ".env.example"
-}
-
-googleServices {
-  missingGoogleServicesStrategy = MissingGoogleServicesStrategy.WARN
-}
-
-dependencies {
-  implementation(platform(libs.androidx.compose.bom))
-  implementation(platform(libs.firebase.bom))
-  implementation(libs.androidx.activity.compose)
-  implementation(libs.androidx.compose.material.icons.core)
-  implementation(libs.androidx.compose.material.icons.extended)
-  implementation(libs.androidx.compose.material3)
-  implementation(libs.androidx.compose.ui)
-  implementation(libs.androidx.compose.ui.graphics)
-  implementation(libs.androidx.compose.ui.tooling.preview)
-  implementation(libs.androidx.core.ktx)
-  implementation(libs.androidx.lifecycle.runtime.compose)
-  implementation(libs.androidx.lifecycle.runtime.ktx)
-  implementation(libs.androidx.lifecycle.viewmodel.compose)
-  implementation(libs.androidx.room.ktx)
-  implementation(libs.androidx.room.runtime)
-  implementation(libs.converter.moshi)
-  implementation(libs.firebase.ai)
-  implementation(libs.firebase.appcheck.recaptcha)
-  implementation(libs.kotlinx.coroutines.android)
-  implementation(libs.kotlinx.coroutines.core)
-  implementation(libs.logging.interceptor)
-  implementation(libs.moshi.kotlin)
-  implementation(libs.okhttp)
-  implementation(libs.retrofit)
-
-  testImplementation(libs.androidx.compose.ui.test.junit4)
-  testImplementation(libs.androidx.core)
-  testImplementation(libs.androidx.junit)
-  testImplementation(libs.junit)
-  testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.robolectric)
-  testImplementation(libs.roborazzi)
-  testImplementation(libs.roborazzi.compose)
-  testImplementation(libs.roborazzi.junit.rule)
-
-  debugImplementation(libs.androidx.compose.ui.test.manifest)
-  debugImplementation(libs.androidx.compose.ui.tooling)
-
-  "ksp"(libs.androidx.room.compiler)
-  "ksp"(libs.moshi.kotlin.codegen)
 }
 ```
 
@@ -342,13 +214,15 @@ dependencies {
 
 ## 4. AndroidManifest, Permissions & Platform Metadata
 
-### 4.1 AndroidManifest.xml
+### 4.1 AndroidManifest (`app/src/main/AndroidManifest.xml`)
+The manifest declares edge-to-edge support, theme assignments, and necessary permissions:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Network permissions for Gemini, Claude, Groq & Google Search Grounding -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -358,12 +232,13 @@ dependencies {
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyApplication">
+        android:theme="@style/Theme.WordContext">
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.MyApplication">
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:theme="@style/Theme.WordContext">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -373,513 +248,507 @@ dependencies {
 </manifest>
 ```
 
-### 4.2 Platform Metadata (`metadata.json`)
-```json
-{
-  "name": "Word Context",
-  "description": "Revealing the original first-century historical, cultural, and legal meaning of Bible words as understood by their original audience.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
-```
+### 4.2 Application Strings & AI Studio Metadata
+* **`app/src/main/res/values/strings.xml`**:
+  ```xml
+  <resources>
+      <string name="app_name">Word Context</string>
+  </resources>
+  ```
+* **`metadata.json`**:
+  ```json
+  {
+    "name": "Word Context",
+    "description": "Historical, Second Temple Jewish, and Greco-Roman biblical exegesis engine & apologetics defense toolkit.",
+    "requestFramePermissions": [],
+    "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  }
+  ```
 
 ---
 
 ## 5. Design System & Jetpack Compose Theming Specification
 
-### 5.1 The Two Canonical Theme Modes (`AppThemeMode`)
-The application supports seamless toggling between two scholarly visual paradigms:
-1. **Midnight Sanctum (`MIDNIGHT` - Default):** Dark obsidian theme optimized for low-glare study, night reading, and vivid accent contrasts.
-2. **Scholar's Desk (`SCHOLAR_DESK`):** Warm parchment, leather, and iron-gall ink theme evoking ancient libraries, manuscript scriptoriums, and daylight study.
+### 5.1 Design Philosophy: "Scholar's Desk" & "Midnight Sanctum"
+The visual identity steers deliberately clear of sterile, generic SaaS styles. It channels the tactile atmosphere of a rare manuscript reading room, classical codex study, and archaeological archive:
+* **Parchment, Vellum & Warm Terracotta:** Warm cream and soft sepia backgrounds in Light Mode (`Scholar's Desk`).
+* **Midnight Papyrus & Obsidian Gold:** Deep obsidian, aged bronze, and warm amber gold in Dark Mode (`Midnight Sanctum`).
+* **Linguistic Color Coding:**
+  * Greek NT Lexical Tokens: Classical Aegean Blue / Cobalt (`#1976D2` / `#64B5F6`).
+  * Hebrew OT Lexical Tokens: Ancient Temple Crimson / Ochre (`#C2185B` / `#F06292`).
+  * Archaeological Inscription Accents: Patina Emerald / Bronze (`#2E7D32` / `#81C784`).
+  * Linguistic Anomaly / Contronym Alerts: Amber Ochre Alert (`#FF8F00` / `#FFA000`).
 
-### 5.2 Color Tokens (`Color.kt`)
+### 5.2 Color Tokens (`ui/theme/Color.kt`)
 ```kotlin
 package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// --- Midnight Sanctum (Dark Theme Tokens) ---
-val SanctumVoidBlack = Color(0xFF070A12)        // Root Background
-val SanctumSurfaceDark = Color(0xFF0D1117)      // Card / Container Surface
-val SanctumSurfaceElevated = Color(0xFF161B22)  // Dialog / Header Surface
-val SanctumBorder = Color(0xFF21262D)           // Subtle Divider / Border
-val SanctumBorderHighlight = Color(0xFF384353)  // Active Element Border
-val CelestialCyan = Color(0xFF38BDF8)           // Primary Brand Accent
-val AncientCodexGold = Color(0xFFC9A84C)        // Secondary Accent & Strong's Badges
-val ImperialPurple = Color(0xFFA855F7)          // Theological Depth Accent
-val TextHighEmphasisDark = Color(0xFFF0F6FC)    // Primary Text (Parchment White)
-val TextMediumEmphasisDark = Color(0xFF8B949E)  // Secondary Text (Slate Grey)
+// Light Palette: "Scholar's Desk"
+val ParchmentLight = Color(0xFFF9F7F2)
+val SurfaceParchment = Color(0xFFFFFFFF)
+val PrimaryBronze = Color(0xFF5D4037)
+val SecondaryOchre = Color(0xFF8D6E63)
+val TertiaryLapis = Color(0xFF1E3A8A)
+val AncientGold = Color(0xFFD4AF37)
+val TextCharcoal = Color(0xFF1F1F1F)
+val TextMutedBrown = Color(0xFF5C554E)
 
-// --- Scholar's Desk (Light Theme Tokens) ---
-val ScholarParchmentBg = Color(0xFFFBF8F2)      // Root Manuscript Vellum
-val ScholarCardSurface = Color(0xFFFFFFFF)      // Pure White Card Surface
-val ScholarContainerSurface = Color(0xFFF4ECE1) // Warm Alabaster Container
-val ScholarBorder = Color(0xFFE2D9CC)           // Manuscript Border
-val OxfordBlue = Color(0xFF1E3A8A)              // Primary Academic Accent
-val SaddleLeatherAmber = Color(0xFFB45309)      // Secondary Rich Amber Accent
-val IronGallInkText = Color(0xFF1C1917)         // Primary Text (Deep Ink)
-val ClassicGraphiteText = Color(0xFF64748B)     // Secondary Text (Muted Graphite)
+// Dark Palette: "Midnight Sanctum"
+val ObsidianDark = Color(0xFF121214)
+val SurfaceObsidian = Color(0xFF1E1E22)
+val PrimaryGold = Color(0xFFDFC07A)
+val SecondarySand = Color(0xFFB0A89F)
+val TertiaryCyan = Color(0xFF90CAF9)
+val TextIvory = Color(0xFFF0EFEB)
+val TextMutedGray = Color(0xFFA6A29A)
 ```
 
-### 5.3 Typography Tokens (`Type.kt`)
-Features ancient serif fonts for Greek/Hebrew lemmata and scripture citations, clean sans-serif for UI navigation, and monospaced typography for Strong's numbers:
-```kotlin
-val AncientScriptStyle = TextStyle(
-    fontFamily = FontFamily.Serif,
-    fontWeight = FontWeight.Bold,
-    fontSize = 28.sp,
-    letterSpacing = 0.5.sp
-)
-
-val TransliterationStyle = TextStyle(
-    fontFamily = FontFamily.SansSerif,
-    fontWeight = FontWeight.Medium,
-    fontSize = 15.sp,
-    fontStyle = FontStyle.Italic
-)
-
-val StrongsBadgeStyle = TextStyle(
-    fontFamily = FontFamily.Monospace,
-    fontWeight = FontWeight.SemiBold,
-    fontSize = 12.sp
-)
-```
+### 5.3 Typography (`ui/theme/Type.kt`)
+Typography uses serif fonts for Scripture headers, Greek/Hebrew lemmata, and Church Father quotations, paired with crisp sans-serif for UI chrome and monospace for morphological Strong's codes:
+* `displayMedium`: 28.sp Serif, Bold (Scripture & Word Headers).
+* `titleLarge`: 22.sp Serif, Medium (Dossier Titles & Exegetical Theorems).
+* `bodyLarge`: 16.sp Sans, Normal (Commentaries, Defenses, Primary Source Translations).
+* `labelSmall`: 11.sp Monospace (Strong's references, morphology tags, manuscript sigla).
 
 ---
 
-## 6. Domain Models & Room Database Architecture
+## 6. Domain Models & Room Database Architecture (v7)
 
-### 6.1 Core Room Entity: `WordStudy.kt`
+### 6.1 Core Room Entities
+The database (`AppDatabase`) operates at schema **version 7** with `fallbackToDestructiveMigration(true)`:
+
+1. **`WordStudy` (`word_studies`)**:
+   Contains all 30 exegetical and morphological fields, including `rootLemma`, `morphologicalFamilyTable`, `hasLinguisticAnomaly`, and `userNotes`.
+
+2. **`AppSetting` (`app_settings`)**:
+   Key-value store for API keys (`api_key_Gemini`, `api_key_Claude`, `api_key_Groq`, `api_key_Grok`) and user preference toggles (`strict_source_verification`, `use_search_grounding`).
+
+3. **`ApologeticsEntity` (`apologetics_entries`)**:
+   Persists saved and user-generated apologetics dossiers:
+   ```kotlin
+   @Entity(tableName = "apologetics_entries")
+   data class ApologeticsEntity(
+       @PrimaryKey
+       val id: String,
+       val title: String,
+       val shortSummary: String,
+       val categoryName: String,
+       val skepticalClaim: String,
+       val historicalThesis: String,
+       val detailedDefense: String,
+       val keyScripturesJson: String,
+       val quickDebateBulletsJson: String,
+       val ancientTextsJson: String,
+       val archaeologyJson: String,
+       val manuscriptsJson: String,
+       val patristicsJson: String,
+       val scholarshipJson: String,
+       val isBookmarked: Boolean = false,
+       val userPersonalNotes: String = "",
+       val isUserGenerated: Boolean = false,
+       val timestamp: Long = System.currentTimeMillis()
+   )
+   ```
+
+### 6.2 Apologetics DAO: `ApologeticsDao.kt`
 ```kotlin
-package com.example.data.model
-
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import com.squareup.moshi.JsonClass
-
-@Entity(tableName = "word_studies")
-@JsonClass(generateAdapter = true)
-data class WordStudy(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
-    val word: String,                              // e.g., "Righteousness"
-    val testament: String,                         // "New Testament (Greek)" or "Old Testament (Hebrew)"
-    val originalWord: String,                      // Ancient script: "δικαιοσύνη" or "צְדָקָה"
-    val transliteration: String,                   // Phonetic guide: "dikaiosyne"
-    val strongsNumber: String,                     // "G1343", "H6666"
-    val literalMeaning: String,                    // Raw etymological root
-    val thenMeaning: String,                       // 1st-Century legal, cultural or covenantal reality
-    val nowMeaning: String,                        // Modern Western individualistic misunderstanding
-    val historicalBackground: String,              // Ancient historical, civic, or covenantal backdrop
-    val culturalContext: String,                   // Near Eastern / Greco-Roman social customs
-    val legalDimension: String,                    // Roman imperial law or Torah judicial framework
-    val theologicalWeight: String,                 // Impact on major scriptural themes
-    val keyScriptures: List<String>,               // Primary passages ["Romans 1:17", "Matthew 6:33"]
-    val closingInsight: String,                    // Pastoral / scholarly synthesis
-    val timestamp: Long = System.currentTimeMillis(),
-    val isFavorite: Boolean = false,
-    val searchGroundingSources: List<String> = emptyList(), // Audited external citation URLs
-    val rootLemma: String = "",                    // Primary linguistic root (e.g., "dike")
-    val morphologicalFamilyTable: String = "",     // Markdown table of related noun/verb/adjective forms
-    val translationDisconnect: String = "",        // Explicit explanation of where English fails
-    val hasLinguisticAnomaly: Boolean = false,     // True if Contronym, Homonym, etc.
-    val anomalyType: String = "",                  // "HOMONYM", "CONTRONYM", "SPLIT_TRANSLATION"
-    val anomalyRootWord: String = "",
-    val anomalyStrongsNumber: String = "",
-    val anomalyPrimaryMeaning: String = "",
-    val anomalyAlternateMeaning: String = "",
-    val anomalyComparisonTable: String = "",
-    val anomalyWowFactor: String = "",
-    val userNotes: String = "",                    // Personal homiletical notes
-    val userTags: List<String> = emptyList()       // Categorical tags ["#Romans", "#Sermon"]
-)
-```
-
-### 6.2 Settings Persistence: `AppSetting.kt`
-Used for multi-provider API keys and user preferences:
-```kotlin
-package com.example.data.local
-
-import androidx.room.Dao
-import androidx.room.Entity
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.PrimaryKey
-import androidx.room.Query
-
-@Entity(tableName = "app_settings")
-data class AppSetting(
-    @PrimaryKey
-    val key: String,
-    val value: String
-)
-
 @Dao
-interface AppSettingDao {
-    @Query("SELECT value FROM app_settings WHERE `key` = :key LIMIT 1")
-    suspend fun getSetting(key: String): String?
+interface ApologeticsDao {
+    @Query("SELECT * FROM apologetics_entries ORDER BY timestamp DESC")
+    fun getAllDossiers(): Flow<List<ApologeticsEntity>>
 
-    @Query("SELECT * FROM app_settings")
-    suspend fun getAllSettings(): List<AppSetting>
+    @Query("SELECT * FROM apologetics_entries WHERE isBookmarked = 1 ORDER BY timestamp DESC")
+    fun getBookmarkedDossiers(): Flow<List<ApologeticsEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun saveSetting(setting: AppSetting)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun saveSettings(settings: List<AppSetting>)
-
-    @Query("DELETE FROM app_settings WHERE `key` = :key")
-    suspend fun deleteSetting(key: String)
-
-    @Query("DELETE FROM app_settings")
-    suspend fun clearAllSettings()
-}
-```
-
-### 6.3 Database Access: `WordStudyDao.kt`
-```kotlin
-package com.example.data.local
-
-import androidx.room.*
-import com.example.data.model.WordStudy
-import kotlinx.coroutines.flow.Flow
-
-@Dao
-interface WordStudyDao {
-    @Query("SELECT * FROM word_studies ORDER BY timestamp DESC")
-    fun getAllWordStudies(): Flow<List<WordStudy>>
-
-    @Query("SELECT * FROM word_studies WHERE isFavorite = 1 ORDER BY timestamp DESC")
-    fun getFavoriteWordStudies(): Flow<List<WordStudy>>
-
-    @Query("SELECT * FROM word_studies WHERE LENGTH(userNotes) > 0 ORDER BY timestamp DESC")
-    fun getWordStudiesWithNotes(): Flow<List<WordStudy>>
-
-    @Query("SELECT * FROM word_studies WHERE (LOWER(word) = LOWER(:word) OR LOWER(transliteration) = LOWER(:word) OR originalWord = :word) AND LOWER(testament) = LOWER(:testament) LIMIT 1")
-    suspend fun getWordStudyByWordAndTestament(word: String, testament: String): WordStudy?
-
-    @Query("SELECT * FROM word_studies WHERE LOWER(word) = LOWER(:word) OR LOWER(transliteration) = LOWER(:word) OR originalWord = :word LIMIT 1")
-    suspend fun getWordStudyAnyTestament(word: String): WordStudy?
-
-    @Query("SELECT COUNT(*) FROM word_studies")
-    suspend fun getCount(): Int
+    @Query("SELECT * FROM apologetics_entries WHERE id = :id LIMIT 1")
+    suspend fun getDossierById(id: String): ApologeticsEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWordStudy(wordStudy: WordStudy): Long
+    suspend fun insertOrUpdate(entity: ApologeticsEntity): Long
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAll(wordStudies: List<WordStudy>): List<Long>
+    @Query("UPDATE apologetics_entries SET isBookmarked = :isBookmarked WHERE id = :id")
+    suspend fun updateBookmark(id: String, isBookmarked: Boolean)
 
-    @Update
-    suspend fun updateWordStudy(wordStudy: WordStudy)
+    @Query("UPDATE apologetics_entries SET userPersonalNotes = :notes WHERE id = :id")
+    suspend fun updatePersonalNotes(id: String, notes: String)
 
-    @Query("UPDATE word_studies SET userNotes = :notes, userTags = :tags WHERE id = :id")
-    suspend fun updateUserNotes(id: Long, notes: String, tags: List<String>)
-
-    @Delete
-    suspend fun deleteWordStudy(wordStudy: WordStudy)
-
-    @Query("DELETE FROM word_studies WHERE id = :id")
-    suspend fun deleteWordStudyById(id: Long)
+    @Query("DELETE FROM apologetics_entries WHERE id = :id")
+    suspend fun deleteById(id: String)
 }
 ```
 
-### 6.4 Room Converters: `Converters.kt`
-Serializes `List<String>` to/from JSON via Moshi for Room SQLite compatibility.
+---
+
+## 7. Offline Curated Exegesis & Concordance Knowledge Bases
+
+To guarantee zero dependency on cloud connectivity for core theological study, Word Context bundles an extensive, scholarly compiled offline knowledge repository.
+
+### 7.1 Curated Exegetical Corpus (`CuratedWordStudies.kt`)
+The seed repository features in-depth exegetical entries for seminal biblical terms across both testaments:
+* **`Agape` (G26 / ἀγάπη):** Refutes romantic/sentimental reductions; demonstrates its 1st-century Greco-Roman reality as covenantal self-giving action and allegiance, independent of reciprocal benefit.
+* **`Shalom` (H7965 / שָׁלוֹם):** Contrasts modern internal serenity with ancient Semitic *shalam* (wholeness, restitution, cosmic relational harmony, and restorative justice).
+* **`Pistis` (G4102 / πίστις):** Refutes passive mental assent ("blind faith"); establishes *pistis* as the Greco-Roman term for sworn civic loyalty, political allegiance, and covenantal trustworthiness to the Emperor/Kyrios.
+* **`Charis` (G5485 / χάρις):** Reconstructs the ancient Greco-Roman Patron-Client dynamic, where *charis* is the unmerited royal favor of the Benefactor (*patronus*) calling forth lifelong client loyalty and gratitude.
+* **`Sarx` (G4561 / σάρξ):** Clarifies Paul's dual use between physical biological creatureliness and the fallen, idolatrous human socio-religious power structure.
+* **`Chesed` (H2617 / חֶסֶד):** Unpacks ancient Near Eastern covenantal devotion, stubborn loyalty, and steadfast treaty obligation.
+* **`Logos` (G3056 / λόγος):** Bridges Heraclitus/Stoic cosmic rationality with the Jewish *Memra* (Targumic divine agency and dynamic creative Word of Yahweh).
+
+### 7.2 Offline Strong's Concordance (`StrongsConcordanceData.kt`)
+* Bundles comprehensive lexical records for New Testament Greek (`G1`–`G5624`) and Old Testament Hebrew (`H1`–`H8674`).
+* Supports prefix filtering (`G` vs `H`), transliteration queries, English gloss matching, and morphological root exploration.
+
+### 7.3 Patristic Witness Archive (`PatristicWitnessData.kt`)
+* Categorized into three historical epochs:
+  1. **Apostolic Fathers (c. 95–150 AD):** Clement of Rome, Ignatius of Antioch, Polycarp, *Didache*, Hermas.
+  2. **Ante-Nicene Apologists (c. 150–325 AD):** Justin Martyr, Irenaeus of Lyons, Tertullian, Clement of Alexandria, Origen, Cyprian.
+  3. **Nicene & Post-Nicene Fathers (c. 325–450 AD):** Athanasius of Alexandria, Basil of Caesarea, Gregory of Nazianzus, John Chrysostom, Jerome, Augustine of Hippo.
+* Every entry contains the Latin/Greek work title, chapter/section, date of composition, and verbatim translated quote showing original patristic linguistic usage.
+
+### 7.4 Philological Family Matrix & Linguistic Anomaly Helper
+* **`PhilologyFamilyHelper.kt`:** Re-unifies English Bible translations by building morphological root tables (e.g., showing how *Righteousness*, *Justification*, *Justice*, and *Righteous* all derive from Greek *DIK-*).
+* **`LinguisticAnomalyHelper.kt`:** Automatically inspects words for contronymic shifts (e.g., Hebrew *Barak* meaning both "to bless" and euphemistically "to curse"), homonyms, and translation traps.
 
 ---
 
-## 7. Offline Curated Knowledge Bases & Epigraphic Corpus
+## 8. Historical Apologetics Architecture & Defense Engine
 
-### 7.1 Curated Word Studies (`CuratedWordStudies.kt`)
-Ships with comprehensive seed studies populated automatically on first run:
-* **Greek NT:** `Righteousness` (*dikaiosyne* - G1343), `Peace` (*eirene* - G1515), `Covenant` (*diatheke* - G1242), `Holy` (*hagios* - G40), `Faith` (*pistis* - G4102), `Grace` (*charis* - G5485), `Love` (*agape* - G26), `Gospel` (*euaggelion* - G2098), `Adoption` (*huiothesia* - G5206), `Redemption` (*apolytrosis* - G629), `Church` (*ekklesia* - G1577), `Fellowship` (*koinonia* - G2842), `The Word` (*logos* - G3056).
-* **Hebrew OT:** `Righteousness` (*tsedakah* - H6666), `Peace` (*shalom* - H7965), `Covenant` (*berit* - H1285), `Holy` (*kadosh* - H6918), `Faithfulness` (*emunah* - H530), `Grace/Favor` (*chen* - H2580), `Lovingkindness` (*chesed* - H2617), `Kinsman Redeemer` (*goel* - H1350), `Hear/Obey` (*shema* - H8085).
+### 8.1 The Apologetics Philosophy: Antimodernism & Anti-Anachronism
+Most modern skepticism against Scripture commits the fallacy of **presentism**: demanding that ancient Near Eastern, Jewish, or Greco-Roman texts adhere to 21st-century Western literary, scientific, or cultural idioms.
+The **Historical Apologetics Engine** refutes skepticism by reconstructing the authentic historical horizon:
+1. **Primary Epigraphical Priority:** Physical inscriptions (Pilate Stone, Erastus Pavement, Mesha Stele, Merneptah Stele) take precedence over 19th-century speculative literary hypotheses.
+2. **Ancient Historiographical Standards:** Distinguishing ancient hyperbolic war rhetoric (standard Near Eastern idioms of victory) from modern genocide.
+3. **Manuscript Superiority:** Demonstrating that the New Testament manuscript tradition (over 5,800 Greek copies, earliest fragments within 30-40 years) exceeds all classical secular Greco-Roman literature (Plato, Caesar, Tacitus) by orders of magnitude.
+4. **Patristic Dialogue Continuity:** Mobilizing the earliest Church Fathers (Justin Martyr, Irenaeus, Tertullian, Origen) who answered the exact same philosophical objections from pagan philosophers (Celsus, Porphyry) in the 2nd and 3rd centuries.
 
-### 7.2 Strong's Concordance Engine (`StrongsConcordanceData.kt`)
-Provides a standalone lexical lookup dictionary containing entries across Greek and Hebrew:
-* `code`: String (e.g., "G1343", "H6666")
-* `lemma`: String (Ancient script)
-* `transliteration`: String
-* `pronunciation`: String
-* `definition`: Exhaustive concordance entry
-* `derivation`: Etymological roots (e.g., "From G1342")
-* `partOfSpeech`: Grammatical role
-* `kjvCount`: Occurrences in King James translation
+### 8.2 Apologetics Domain Models (`HistoricalApologeticsModels.kt`)
+* `ApologeticsCategory`: Enum covering `HISTORICAL_JESUS`, `ARCHAEOLOGY_ARTIFACTS`, `MANUSCRIPT_RELIABILITY`, `ALLEGED_CONTRADICTIONS`, `PAGAN_MYTH_REFUTATION`, `CANON_AND_COUNCILS`, `MORAL_OLD_TESTAMENT`, `PATRISTIC_APOLOGISTS`, `THEODICY_AND_SUFFERING`, `JUDGMENT_AND_HELL`.
+* `AncientHistoricalCitation`: Author, Source Work, Date, Translated Excerpt, and Scholarly Context (e.g., Tacitus *Annals* 15.44, Josephus *Antiquities* 18.3.3, Pliny *Epistles* 10.96).
+* `ArchaeologicalDiscovery`: Artifact Name, Discovery Location/Year, Repository Museum, Inscription Summary, and Academic Significance.
+* `ManuscriptEvidenceItem`: Identifier (P52, P46, P66, Codex Sinaiticus), Approximate Date, Biblical Passage, Repository, and Comparative Advantage vs Secular Classics.
+* `PatristicApologeticQuote`: Church Father, Era, Treatise Cited, Argument against Pagan Critic, and Excerpt.
+* `ScholarCitation`: Scholar Name, University/Institution, Published Work, and Verified Domain.
+* `ApologeticsDossier`: Master model assembling the full defense brief with Quick Debate Bullets.
 
-### 7.3 Early Church Fathers Corpus (`PatristicWitnessData.kt`)
-Structures primary witness quotations into three eras:
-1. **Apostolic Fathers (c. 70–150 AD):** Clement of Rome (*1 Clement*), Ignatius of Antioch (*Epistle to the Trallians*, *Epistle to the Romans*), Polycarp of Smyrna (*Epistle to the Philippians*), *Didache*.
-2. **Ante-Nicene Apologists (c. 150–325 AD):** Justin Martyr (*First & Second Apologies*), Irenaeus of Lyons (*Adversus Haereses*), Tertullian (*Apologeticus*), Origen of Alexandria (*De Principiis*).
-3. **Nicene & Post-Nicene Fathers (c. 325–450 AD):** Athanasius of Alexandria (*De Incarnatione*), John Chrysostom (*Homilies on Romans*), Augustine of Hippo (*De Spiritu et Littera*), Basil of Caesarea (*De Spiritu Sancto*).
+### 8.3 The 10 Master Curated Dossiers (`CuratedApologeticsLibrary.kt`)
+1. **Did Jesus Ever Claim to Be God?** (`apo_jesus_divinity`):
+   - Refuting claims of late evolution or invention at Nicaea.
+   - Core Evidence: Mark 14:61–64 (Daniel 7:13 clouds + Psalm 110:1 divine throne); Caiaphas tearing his robes for blasphemy; Philippians 2:5–11 pre-Pauline hymn (c. 38–40 AD); Pliny the Younger (112 AD); Alexamenos Graffito (c. 150–200 AD).
+2. **Archaeological Confirmations: Pilate, Erastus & Caiaphas** (`apo_archaeology_pilate_erastus`):
+   - Refuting claims that Gospel figures are fictitious romance characters.
+   - Core Evidence: The 1961 Caesarea Pilate Stone (*Praefectus Iudaeae*); 1929 Corinth Erastus Pavement (*Aedilis* = *Oikonomos* in Rom 16:23); 1990 Jerusalem Caiaphas Family Ossuary (*Yehosef bar Qayafa*).
+3. **The 'Copycat Jesus' Fallacy: Mithras, Horus & Mystery Cults** (`apo_pagan_myth_refutation`):
+   - Dismantling *Zeitgeist* internet claims of pagan plagiarism.
+   - Core Evidence: Primary Persian/Roman texts proving Mithras was born from a rock (*petrogenes*), never died, had no disciples; Egyptian Pyramid Texts proving Horus was conceived post-mortem by Isis with Osiris's reconstructed corpse (no virgin birth, no crucifixion); late 1st-century arrival of Roman Mithraism.
+4. **Textual Integrity: The Unrivaled New Testament Manuscript Record** (`apo_manuscript_reliability`):
+   - Refuting the "telephone game" myth.
+   - Core Evidence: Over 5,800 Greek manuscripts; P52 (c. 125 AD, 30-year gap) vs 900+ year gap for Caesar and Plato; 99% of variants being spelling/word order; Dead Sea Scrolls 1QIsa confirming 1,000-year Old Testament copying stability.
+5. **The Council of Nicaea: Debunking Dan Brown & Constantine Myths** (`apo_council_nicaea_canon`):
+   - Did Constantine choose the Bible or invent Jesus' deity in 325 AD?
+   - Core Evidence: Official council canons (Arian controversy, Easter date); 316 to 2 vote (99.4% landslide); Muratorian Fragment (c. 170 AD) and Irenaeus (c. 180 AD) confirming the fourfold Gospel 150 years prior to Nicaea.
+6. **The Genealogies of Jesus: Levirate Law & Maternal Succession** (`apo_genealogies_matthew_luke`):
+   - Resolving Matthew 1 vs Luke 3.
+   - Core Evidence: Matthew traces the legal royal line through Solomon to Joseph; Luke traces the biological line through Nathan to Mary (Jerusalem Talmud *Chagigah* 77b identifies "Miriam daughter of Heli"); Mosaic inheritance law for daughters (Numbers 27); avoiding the blood-curse on Jeconiah (Jeremiah 22:30).
+7. **Canaanite Conquest & Ancient Near Eastern War Rhetoric** (`apo_canaanite_warfare_ethics`):
+   - Did God command genocide?
+   - Core Evidence: Standard Near Eastern military hyperbole ("destroyed all that breathed" on Mesha Stele 840 BC and Merneptah Stele 1208 BC); Scripture proving survival (Joshua 15 and Judges 1 show Canaanites living in the same cities); Deuteronomy 7:3 forbidding intermarriage (proving coexistence expected); judgment for 400 years of child sacrifice to Moloch.
+8. **Early Church vs Pagan Critics: Origen Refutes Celsus** (`apo_celsus_origen_defense`):
+   - Did early Christianity avoid intellectual scrutiny?
+   - Core Evidence: Celsus's *The True Word* (177 AD) raising modern objections; Origen's 8-volume *Contra Celsum* (248 AD); the psychology of apostolic martyrdom; Christians rescuing discarded Roman infants from trash heaps and transforming Roman society.
+9. **The Problem of Evil & Suffering: Why Do Bad Things Happen to Good People?** (`apo_problem_of_evil_suffering`):
+   - Resolving the dilemma between divine goodness and human agony.
+   - Core Evidence: Alvin Plantinga's Free Will Defense proving moral agency requires the possibility of evil; Irenaeus's soul-making theodicy (adversity trains virtue); evil as privation of good (*privatio boni* in Augustine); biblical reality of a fractured creation (Romans 8); the Cross demonstrating God entering human agony; Giv'at ha-Mivtar crucifixion archaeology.
+10. **The Nature of Hell & Judgment: Does an All-Loving God Send People to Hell?** (`apo_hell_divine_justice_love`):
+    - Deconstructing medieval Dante folklore to reveal biblical Gehenna, moral autonomy, and holiness.
+    - Core Evidence: 1st-century context of *Ge-Hinnom* as emblem of tragedy and wasted life; C.S. Lewis's principle that the doors of hell are locked from the inside ("Thy will be done"); Romans 1:24 judicial "giving over"; Miroslav Volf on divine wrath as holy love opposing injustice; Ketef Hinnom silver scrolls (c. 600 BC); Papyrus 72 (2 Pet 3:9, God not wishing that any perish).
 
-### 7.4 Linguistic Anomaly Engine (`LinguisticAnomalyHelper.kt`)
-Identifies Contronyms (words that have contradictory meanings depending on context) and Homonyms:
-* **Hebrew *Barakh* (H1288):** Primarily means "to bless", but by ancient euphemistic legal usage also means "to curse" (Job 1:5, 1 Kings 21:10).
-* **Hebrew *Hesed* (H2617):** Primarily means "unfailing covenant love/kindness", but can also mean "disgrace/reproach" (Leviticus 20:17, Proverbs 14:34).
-* **Greek *Pharmakeia* (G5331):** Original dual meaning: medicine/healing drugs vs. sorcery/poisoning.
-* **Greek *Zelos* (G2205):** Zealous devotion vs. destructive factional jealousy.
+### 8.4 Anti-Hallucination AI Defense Generator (`HistoricalApologeticsRepository.kt`)
+When users ask an apologetics question or enter a skeptical objection:
+1. **Low-Temperature Prompting (`temperature = 0.2`):** Directs the model into strict academic and historical mode.
+2. **Strict Negative Constraints:** Explicitly forbids the hallucination of non-existent ancient inscriptions, fake church father treatises, or fictitious papyri.
+3. **Structured JSON Output:** Returns clean schema matching `ApologeticsDossier` (title, shortSummary, category, skepticalClaim, historicalThesis, detailedDefense, keyScriptures, quickDebateBullets).
+4. **Keyword-Ranked Semantic Curated Fallback:** If offline or without API keys, matches against `CuratedApologeticsLibrary` using semantic keywords and exact phrase weighting, guaranteeing reliable, vetted responses even without cloud connectivity.
 
 ---
 
-## 8. Anti-Hallucination & Epigraphical Verification Engine
+## 9. Anti-Hallucination & Epigraphical Verification Engine
 
-### 8.1 The Trust Tier Taxonomy (`SourceTrustVerifier.kt`)
-Every external source citation is audited and assigned a trust tier:
-* **Tier 1: Primary Archaeological / Epigraphic (Score: 98–100%, Emerald `#10B981`):** Inscriptions, papyri, classical digital archives (`perseus.tufts.edu`, `papyri.info`, `epigraphy.info`, `inscriptions.packhum.org`, `britishmuseum.org`, `baslibrary.org`, `trismegistos.org`).
-* **Tier 2: Academic Peer-Reviewed Press (Score: 95–98%, Sky Blue `#38BDF8`):** University presses and scholarly journals (`cambridge.org`, `oxfordbibliographies.com`, `oup.com`, `jstor.org`, `brill.com`, `degruyter.com`, `harvard.edu`, `yale.edu`, `mohrsiebeck.com`).
-* **Tier 3: Scholarly Lexicons (Score: 92–95%, Gold `#C9A84C`):** Standard academic lexical tools (`stepbible.org`, `blueletterbible.org`, `ccel.org`, `sefaria.org`, `earlychristianwritings.com`).
-* **Tier 4: General Educational (Score: 85–90%, Slate `#94A3B8`):** Reputable historical encyclopedias (`worldhistory.org`, `britannica.com`, `bibleodyssey.org`).
-* **Tier 5: Excluded (Score: 0%, Red `#EF4444`):** Unverified blogs, forums, commercial clickbait, Reddit, Quora, Medium. Auto-filtered to ensure zero hallucination.
+### 9.1 The Need for Rigorous Epigraphical Verification
+General-purpose LLMs frequently invent citations, misattribute ancient texts, or quote popular apologetics myths that lack scholarly backing. Word Context implements a strict **Source Verification Engine** (`SourceTrustVerifier.kt`) to ensure that every historical citation meets rigorous academic standards.
 
-### 8.2 Audit Pipeline Logic
-`SourceTrustVerifier.auditAndFilterSources(sources, strictFilter)`:
-1. Strips any URLs matching the blacklist or commercial forum patterns.
-2. Evaluates the domain against trusted registries.
-3. Calculates an overall consensus trust score (averaging Tier 1–3 sources).
-4. Emits `VerificationMetadata` providing the audit summary, primary sources count, and methodology explanation for user inspection.
-
----
-
-## 9. Networking, Multi-Provider Architecture & AI Pipeline
-
-### 9.1 Retrofit Client & Gemini API (`GeminiApiService.kt`)
+### 9.2 Trust Tiers & Whitelisting Algorithm
+Every web source, archaeological report, or journal citation is classified into one of four trust tiers based on academic pedigree:
 ```kotlin
-interface GeminiApiService {
-    @POST("v1beta/models/gemini-flash-latest:generateContent")
-    suspend fun generateContent(
-        @Query("key") apiKey: String,
-        @Body request: GenerateContentRequest
-    ): GenerateContentResponse
+enum class TrustTier(val label: String, val minScore: Int) {
+    PEER_REVIEWED_ACADEMIC("Peer-Reviewed Academic", 95),
+    PRIMARY_SOURCE_ARCHIVE("Primary Source Archive", 90),
+    SCHOLARLY_REFERENCE("Scholarly Reference", 80),
+    GENERAL_WEB_UNVERIFIED("Unverified Web Source", 0)
+}
+```
+* **Tier 1 (95–100%):** `.edu` university domains, Cambridge Core, Oxford Academic (`oup.com`), Brill (`brill.com`), JSTOR (`jstor.org`), Harvard University Press, Society of Biblical Literature (`sbl-site.org`).
+* **Tier 2 (90–95%):** Primary text repositories: Perseus Digital Library (`tufts.edu`), Packard Humanities Institute (`phi.org`), Center for the Study of New Testament Manuscripts (`csntm.org`), Dead Sea Scrolls Digital Library, Papyrus Portal (`papyri.info`).
+* **Tier 3 (80–89%):** Standard scholarly encyclopedias: *Encyclopaedia Britannica*, BibleOdyssey, Jewish Virtual Library.
+* **Tier 4 (<80%):** Unmoderated forums, personal apologetics blogs, and commercial content farms. In "Strict Verification Mode", Tier 4 sources are flagged with warning badges or filtered out.
+
+---
+
+## 10. Networking, Multi-Provider Architecture & AI Pipeline
+
+### 10.1 Multi-Provider Flexibility
+Users are not locked into a single AI backend. The Settings tab allows configuring and swapping between four leading LLM providers:
+1. **Google Gemini (`gemini-3.8-flash` / `gemini-3.1-pro-preview` / `gemini-flash-latest`):** High-speed, high-depth scholarly reasoning with native Google Search Grounding support.
+2. **Anthropic Claude (`claude-3-5-sonnet`):** Premium academic exegetical and patristic reasoning.
+3. **Groq (`llama-3.3-70b-versatile`):** Ultra-low latency open-weights inference (sub-500ms responses).
+4. **xAI Grok (`grok-2`):** Broad contextual understanding and alternative perspective synthesis.
+
+### 10.2 Retrofit & OkHttp Architecture
+* `RetrofitClient.kt`: Configures an `OkHttpClient` with 60-second connect/read/write timeouts, HTTP logging interceptor, and `MoshiConverterFactory`.
+* `GeminiApiService.kt`: Defines the REST endpoint for Gemini:
+  ```kotlin
+  @POST("v1beta/models/{model}:generateContent")
+  suspend fun generateContent(
+      @Path("model") model: String,
+      @Query("key") apiKey: String,
+      @Body request: GenerateContentRequest
+  ): Response<GenerateContentResponse>
+  ```
+
+### 10.3 Live Google Search Grounding
+To verify recent archaeological digs (e.g., Mount Ebal curse tablet or Jerusalem excavations), Word Context activates Gemini's native search grounding tool:
+```json
+{
+  "tools": [
+    { "googleSearch": {} }
+  ]
+}
+```
+The response includes `groundingMetadata` containing search queries and `groundingChunks` with live web URIs that are automatically parsed and graded by `SourceTrustVerifier`.
+
+---
+
+## 11. Repository Layer & Offline-First Data Orchestration
+
+### 11.1 Cache-First Exegesis Pipeline (`WordStudyRepository.kt`)
+When a user searches for a biblical word or passage:
+1. **Local Room Check:** Queries `word_studies` table. If cached, emits immediately via Kotlin `Flow`.
+2. **Curated Seed Check:** If not in Room, searches `CuratedWordStudies.kt`. If found, saves to Room and emits.
+3. **AI Exegetical Synthesis:** If entirely new, constructs a 30-field strict JSON prompt directing the active model to act as a 1st-century Near Eastern epigrapher.
+4. **Moshi Serialization & Room Caching:** Parses the JSON response, validates fields, saves to `AppDatabase`, and emits `SearchUiState.Success`.
+
+### 11.2 Apologetics Orchestration (`HistoricalApologeticsRepository.kt`)
+* Coordinates between `ApologeticsDao` and AI generation.
+* Low-temperature prompting (`temperature = 0.2`) ensures factual stability.
+* Emits reactive `Flow<List<ApologeticsEntity>>` for automatic UI updates when bookmarks or notes change.
+
+---
+
+## 12. ViewModel & Reactive State Management
+
+`WordStudyViewModel.kt` serves as the central state coordinator across all five app tabs:
+
+### 12.1 Key StateFlows
+* `searchUiState: StateFlow<SearchUiState>`: Drives the Study Hub UI (`Idle`, `Loading`, `Success`, `Error`).
+* `currentWordStudy: StateFlow<WordStudy?>`: The actively inspected exegetical study.
+* `savedWordStudies: StateFlow<List<WordStudy>>`: All user-favorited studies.
+* `savedApologetics: StateFlow<List<ApologeticsEntity>>`: All persisted apologetics dossiers.
+* `bookmarkedApologetics: StateFlow<List<ApologeticsEntity>>`: Favorited apologetic briefs.
+* `apologeticsSearchQuery: StateFlow<String>`: Real-time query filter in the Apologetics tab.
+* `selectedApologeticsCategory: StateFlow<ApologeticsCategory?>`: Active category chip filter.
+* `activeProvider / geminiKey / claudeKey / groqKey / grokKey`: Live provider credentials.
+
+### 12.2 Native Koine Greek & Biblical Hebrew TTS
+Integrated with `android.speech.tts.TextToSpeech`. Correctly sets `Locale.GREEK` or phonetic fallbacks to pronounce ancient lemmata aloud, enhancing scholarly pronunciation.
+
+---
+
+## 13. UI Components & Interactive Subsystems
+
+### 13.1 `PatristicWitnessCard.kt`
+Renders quotes from Early Church Fathers with an epoch indicator chip (Apostolic / Ante-Nicene / Nicene), ancient source title, and one-tap copy/share buttons.
+
+### 13.2 `LinguisticDisconnectAlertCard.kt`
+Highlights when an English translation obscures a biblical Contronym or false friend, preventing exegetical fallacies.
+
+### 13.3 `ExegeticalNotesSection.kt`
+In-app rich notebook enabling scholars and pastors to write sermon notes, attach category tags, and auto-persist to Room.
+
+### 13.4 `StudyExportSheet.kt`
+Bottom sheet offering three structured export formats:
+1. **Homiletical Sermon Outline:** Hook, Historical Context, Word Study, Exegesis, Modern Application.
+2. **Academic Research Paper Excerpt:** Formal citations, Greek/Hebrew lemmata, morphology tables.
+3. **Quick Study Flashcard:** Definition, 1st-century context, core takeaway.
+
+---
+
+## 14. Primary Screens & 5-Tab Navigation Architecture
+
+The app shell in `WordContextApp.kt` implements a **5-Tab Navigation Bar**:
+1. **Tab 0: Study Hub (`Icons.Outlined.Search`, "Study Hub"):** Word study search, historical exegesis breakdown, interactive linguistic anomaly banner, morphological matrix, and Google Search Grounded Ask AI.
+2. **Tab 1: Apologetics (`Icons.Outlined.Shield`, "Apologetics"):**
+   - Category filter chips (All, Historical Jesus, Archaeology, Manuscripts, Harmonies, Pagan Myths, Canon, Ethics, Patristics).
+   - Real-time search across titles, objections, and archaeological discoveries.
+   - Sub-filters: "All Defense Briefs" vs "Saved & Bookmarked".
+   - "Ask AI" button launching `AskApologeticsDialog.kt`.
+   - Rich cards with skeptical claim quote banners, thesis snippets, and evidence tags.
+   - Full-screen `ApologeticsDetailSheet.kt` with personal defense notes editor.
+3. **Tab 2: Lexicon (`Icons.Outlined.MenuBook`, "Lexicon"):** Offline Strong's Concordance browser with NT Greek and OT Hebrew tabs.
+4. **Tab 3: Notebook (`Icons.Outlined.EditNote`, "Notebook"):** Saved exegetical studies, bookmarks, history, and custom tags.
+5. **Tab 4: Settings (`Icons.Outlined.Settings`, "Settings"):** Multi-provider API keys (Gemini, Claude, Groq, Grok), Scholar's Desk vs Midnight Sanctum theme switcher, search grounding toggle, and strict verification options.
+
+---
+
+## 15. Sharing, Copying & Export System Specification
+
+### 15.1 Apologetics Defense Brief Export
+`buildFullApologeticsExportText(dossier: ApologeticsDossier)` generates a comprehensive text brief containing:
+* Header banner
+* Title & Category
+* Skeptical Claim / Popular Critique
+* Core Historical Thesis & Rebuttal
+* Exhaustive Historical & Exegetical Breakdown
+* Key Scriptures
+* Archaeological & Epigraphical Confirmations (Artifact, Location, Inscription, Significance)
+* Primary Ancient Historical Citations (Tacitus, Josephus, Pliny, etc.)
+* Quick Debate Takeaways (Bullet points)
+* Exported via clipboard copy or Android `Intent.ACTION_SEND` chooser for study groups, campus evangelism, or debates.
+
+---
+
+## 16. Step-by-Step Reconstruction Manual for Autonomous AI
+
+An AI system reading this blueprint can construct the entire application from scratch by following this exact 13-step sequence:
+
+1. **Step 1: Configure Build & Dependency Matrix** (`gradle/libs.versions.toml`, `settings.gradle.kts`, `app/build.gradle.kts`).
+2. **Step 2: Configure Android Manifest & App Name** (`AndroidManifest.xml`, `strings.xml`, `metadata.json`).
+3. **Step 3: Implement Theme Tokens** (`ui/theme/Color.kt`, `ui/theme/Type.kt`, `ui/theme/Theme.kt`).
+4. **Step 4: Implement Domain Models & Room DB Layer (v7)**:
+   - `WordStudy.kt`, `AppSetting.kt`, `HistoricalApologeticsModels.kt`.
+   - `Converters.kt`, `WordStudyDao.kt`, `ApologeticsDao.kt`, `AppDatabase.kt`.
+5. **Step 5: Implement Seed Knowledge Bases**:
+   - `CuratedWordStudies.kt`, `StrongsConcordanceData.kt`, `PatristicWitnessData.kt`.
+   - `PhilologyFamilyHelper.kt`, `LinguisticAnomalyHelper.kt`.
+   - `CuratedApologeticsLibrary.kt` (10 master dossiers: Divinity, Nicaea, Pagan Myths, Pilate Stone, Eyewitness Gospels, Resurrection Minimal Facts, Canaanite Warfare, Patristic Critics, Problem of Evil & Suffering, and Hell & Divine Justice).
+6. **Step 6: Implement Verification & AI Client** (`SourceTrustVerifier.kt`, `GeminiApiService.kt`, `GeminiModels.kt`).
+7. **Step 7: Implement Repositories**:
+   - `WordStudyRepository.kt` (cache-first exegesis & chat).
+   - `HistoricalApologeticsRepository.kt` (apologetics persistence & low-temp vetted defense generation).
+8. **Step 8: Implement ViewModel & Reactive State** (`WordStudyViewModel.kt` managing 5-tab flows).
+9. **Step 9: Implement UI Components**:
+   - `PatristicWitnessCard.kt`, `LinguisticDisconnectAlertCard.kt`, `ExegeticalNotesSection.kt`, `StudyExportSheet.kt`.
+10. **Step 10: Implement Core Screens**:
+    - `LexiconScreen.kt`, `NotebookScreen.kt`, `PaywallScreen.kt`, `OnboardingDialog.kt`, `LegalDisclosuresDialog.kt`.
+    - `ApologeticsScreen.kt`, `ApologeticsDetailSheet.kt`, `AskApologeticsDialog.kt`.
+11. **Step 11: Implement App Shell & 5-Tab Navigation** (`WordContextApp.kt`).
+12. **Step 12: Implement Entry Point** (`MainActivity.kt`).
+13. **Step 13: Test & Compile**:
+    - `compile_applet` (or `gradle compileDebugSources`).
+    - `gradle :app:testDebugUnitTest`.
+
+### 16.2 Cross-Platform Progressive Web App (PWA) Architectural Mapping
+
+For an AI agent or engineer tasked with building **Word Context** as a **Progressive Web App (PWA)**, the architecture, domain models, algorithms, and prompts translate directly into modern web primitives:
+
+| Android Architecture Component | PWA / Web Stack Equivalent | Implementation Blueprint |
+| :--- | :--- | :--- |
+| **UI Framework** | **React 19 / Vite + TypeScript** or **Next.js** | Single Page Application with client-side tab routing. |
+| **Design System & Styling** | **Tailwind CSS + Lucide React** | Use CSS variables or Tailwind classes matching Section 5 tokens (`#080C14`, `#131D2E`, `#38BDF8`, `#FBF8F2`, `#FAF7F0`). |
+| **Local Database (Room v7)** | **IndexedDB via `Dexie.js`** | Client-side persistent relational storage for word studies, apologetics dossiers, and user settings. |
+| **Seed Knowledge Bases** | **Bundled JSON / Static TypeScript Objects** | Bundle `curated_studies.json`, `strongs_concordance.json`, `patristic_witnesses.json`, and `curated_apologetics.json` for 100% offline zero-network execution. |
+| **Offline Engine & Installability** | **Service Worker (`sw.js` / Workbox) + `manifest.webmanifest`** | Cache-first caching strategy for app shell, fonts, and seed databases; installable to home screen / desktop. |
+| **Pronunciation / Audio** | **Web Speech API (`speechSynthesis`)** | `window.speechSynthesis.speak(new SpeechSynthesisUtterance(text))` with Greek (`el-GR`) / Hebrew (`he-IL`) language fallback. |
+| **Sharing & Clipboard** | **Web Share API & Clipboard API** | `navigator.share({ title, text })` with fallback to `navigator.clipboard.writeText(text)`. |
+| **AI Networking & Generation** | **Standard `fetch()` or `@google/genai`** | Direct calls to `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=...` using exact JSON schemas in Section 10. |
+| **State Management** | **Zustand** or **React Context / hooks** | Unidirectional data store replicating `WordStudyViewModel` (search state, apologetics filter state, theme toggle, chat history). |
+
+#### 16.2.1 IndexedDB Schema (Dexie.js TypeScript Definition)
+```typescript
+import Dexie, { type Table } from 'dexie';
+
+export interface WordStudy {
+  id?: number;
+  word: string;
+  testament: 'New Testament' | 'Old Testament';
+  originalWord: string;
+  transliteration: string;
+  strongsNumber: string;
+  literalMeaning: string;
+  historicalContext: string;
+  culturalNuance: string;
+  theologicalSignificance: string;
+  modernApplication: string;
+  scriptureReferences: string[];
+  isFavorite: boolean;
+  userNotes: string;
+  userTags: string[];
+  isUserGenerated: boolean;
+  timestamp: number;
+}
+
+export interface ApologeticsEntity {
+  id: string;
+  title: string;
+  shortSummary: string;
+  categoryName: string;
+  skepticalClaim: string;
+  historicalThesis: string;
+  detailedDefense: string;
+  isBookmarked: boolean;
+  userPersonalNotes: string;
+  isUserGenerated: boolean;
+  timestamp: number;
+}
+
+export interface AppSetting {
+  key: string;
+  value: string;
+}
+
+export class WordContextDB extends Dexie {
+  wordStudies!: Table<WordStudy, number>;
+  apologetics!: Table<ApologeticsEntity, string>;
+  settings!: Table<AppSetting, string>;
+
+  constructor() {
+    super('WordContextDB');
+    this.version(1).stores({
+      wordStudies: '++id, word, originalWord, strongsNumber, testament, isFavorite, timestamp',
+      apologetics: 'id, title, categoryName, isBookmarked, isUserGenerated, timestamp',
+      settings: 'key'
+    });
+  }
+}
+
+export const db = new WordContextDB();
+```
+
+#### 16.2.2 PWA Web Manifest (`public/manifest.webmanifest`)
+```json
+{
+  "name": "Word Context — Historical Bible Exegesis & Apologetics",
+  "short_name": "WordContext",
+  "description": "Greek and Hebrew word context unfolding original 1st-century cultural nuance and peer-reviewed historical apologetics.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080C14",
+  "theme_color": "#080C14",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
 }
 ```
 
-### 9.2 The Master Philologist System Prompt
-```
-You are an expert First-Century Biblical Philologist, Historian of Antiquity, and Classical Epigrapher.
-Your mission is to reveal the exact first-century historical, cultural, legal, and linguistic meaning of the requested biblical term as understood by its original Near Eastern, Second Temple Jewish, or Greco-Roman audience.
-
-CRITICAL DISCIPLINARY RULES:
-1. ANTIMODERNISM: Contrast the original reality with modern Western/English misconceptions.
-2. EPIGRAPHY & LAW: Cite specific Roman civic statutes, Near Eastern treaty structures, or papyrological records.
-3. WORD FAMILY: Supply the complete morphological word family table (nouns, verbs, adjectives).
-4. SCRIPTURAL PASSAGES: Provide key scriptures illustrating the original first-century meaning.
-5. STRICT OBJECTIVITY: Avoid denominational bias; adhere to peer-reviewed historical-grammatical consensus.
-
-OUTPUT FORMAT: Strict valid JSON conforming to the WordStudy schema.
-```
-
-### 9.3 Multi-Provider Key Support
-The application supports multiple LLM providers configured in Settings:
-* **Gemini** (Google AI Studio - Default, injected via `BuildConfig.GEMINI_API_KEY`)
-* **Claude** (Anthropic)
-* **Groq** (Fast Llama-3 inference)
-* **Grok** (xAI)
+#### 16.2.3 Prompt to Instruct Another AI to Build the PWA
+To instruct any autonomous coding AI (e.g. Claude Code, Cursor, Copilot, or another agent) to build the complete PWA from this README, pass this prompt:
+> *"Read the technical specification in `README.md`. Build a complete, production-grade Progressive Web App (PWA) using Vite + React 19 + TypeScript + Tailwind CSS + Lucide Icons + Dexie.js (IndexedDB). Implement the exact 5-tab layout (Study Hub, Apologetics, Lexicon, Notebook, Settings), both Midnight Sanctum and Scholar's Desk themes, the offline seed knowledge bases (including all 10 curated apologetics dossiers and Strong's Concordance), the anti-hallucination domain trust scoring engine, and the Gemini API client with the exact JSON generation prompts in Section 10. Ensure the app is fully installable with service worker offline caching."*
 
 ---
 
-## 10. Repository Layer & Offline-First Data Orchestration
+## 17. Verification, Testing & Developer Maintenance Contract
 
-### 10.1 `WordStudyRepository.kt` Core Mechanics
-1. **Cache-First Lookup:** First queries `WordStudyDao.getWordStudyByWordAndTestament(word, testament)`. If found, returns the cached record immediately.
-2. **Curated Fallback:** If not in DB, searches `CuratedWordStudies.getCuratedWordStudy(word, testament)`. If found, inserts it into SQLite and returns it.
-3. **AI Generation:** If neither exists and an API key is available, calls Gemini API with the Philologist prompt. Parses response into `WordStudy`, enhances it with `PhilologyFamilyHelper` and `LinguisticAnomalyHelper`, saves to SQLite, and returns it.
-4. **Offline Resilience:** If network fails or no key is provided, constructs a synthesized historical study using Strong's Concordance and lexical root algorithms.
-
----
-
-## 11. ViewModel & Reactive State Management
-
-### 11.1 Dual Persistence Strategy
-All critical configuration flags and API keys are dual-persisted:
-* **SharedPreferences (`word_study_prefs`):** For instantaneous synchronous retrieval upon app boot.
-* **Room SQLite (`app_settings`):** For long-term durable multi-table backup across updates and device migrations.
-
-### 11.2 StateFlow Reactive Streams
-* `searchUiState`: Sealed interface (`Idle`, `Loading`, `Success(WordStudy)`, `Error(String)`).
-* `viewingStudy`: Currently opened `WordStudy` displayed in the detail view.
-* `history`, `favorites`, `studiesWithNotes`: Room Flows converted to `StateFlow` via `.stateIn()`.
-* `themeMode`: `MIDNIGHT` vs `SCHOLAR_DESK`.
-* `isProUser`: Boolean state for Pro features / developer mode.
-* `chatMessages`: List of `ChatMessage` objects in the Ask AI overlay dialog.
-* `useSearchGrounding`: Boolean toggle for live academic grounding.
-* `strictVerification`: Boolean toggle enforcing 90%+ academic domain filter.
-
----
-
-## 12. UI Components & Interactive Subsystems
-
-### 12.1 `PatristicWitnessCard.kt`
-* Expandable Material 3 Card displaying Early Church Fathers profiles.
-* Epoch selector chips: **Apostolic Fathers (70–150 AD)**, **Ante-Nicene (150–325 AD)**, and **Nicene (325–450 AD)**.
-* Verbatim quotation box with primary work citations (e.g., *Against Heresies, Book III.18*).
-* **Copy Quote Button:** Copies formatted quote with full historical citation to clipboard.
-* **Share Quote Button:** Launches Android Share Sheet with citation text.
-
-### 12.2 `LinguisticDisconnectAlertCard.kt`
-* High-visibility contextual card displayed when `study.hasLinguisticAnomaly == true`.
-* Displays **Contronym / Homonym** badge, root word, and comparative tabular contrast.
-* Explains where English translations cause serious theological or conceptual disconnects.
-
-### 12.3 `ExegeticalNotesSection.kt`
-* Rich note-taking component for pastors and scholars.
-* Outlined text field with debounce auto-save into `WordStudy.userNotes`.
-* Interactive tag pill row (e.g., `#Romans`, `#SermonPrep`, `#Thesis`).
-* Add/remove custom tags stored directly in the Room database.
-
-### 12.4 `StudyExportSheet.kt`
-* Modal bottom sheet offering three export formats:
-  1. **Sermon Outline:** 3-point homiletical preaching outline with pastoral application.
-  2. **Academic Exegesis Paper:** Full scholarly Markdown brief with lexical apparatus and citations.
-  3. **Pocket Study Card:** Compact bulleted summary for small groups and messaging apps.
-* Actions: **Copy to Clipboard** and **Share via Android Share Sheet**.
-
----
-
-## 13. Primary Screens & Navigation Architecture
-
-### 13.1 `WordContextApp.kt` (Shell & Hub Screen)
-* **Scaffold Layout:** Handles `WindowInsets` edge-to-edge.
-* **TopAppBar:**
-  * App Branding & Icon.
-  * **Theme Toggle Lamp Button:** Cycles between Midnight Sanctum & Scholar's Desk.
-  * **Ask AI Dialog Quick Launcher:** Opens full-screen interactive philologist chat.
-  * **Pro Mode Indicator:** Toggles developer/unlocked mode.
-* **Bottom Navigation Bar (4 Destinations):**
-  * `0: Hub (Study Engine)` — Search bar, hero cards, curated word carousel, word study detail.
-  * `1: Lexicon (Strong's)` — Comprehensive offline Strong's Concordance viewer.
-  * `2: Notebook` — Saved studies, favorites, tag filter chips, user notes.
-  * `3: Settings` — API keys, providers, search grounding toggles, methodology audits.
-
-### 13.2 `LexiconScreen.kt`
-* Tabbed navigation between **New Testament (Greek)** and **Old Testament (Hebrew)**.
-* Live filter search bar searching by Strong's number (e.g., "G1343"), ancient lemma, or English transliteration.
-* Displays part of speech, KJV occurrences, root derivation, and exhaustive definition.
-* "Study in Context" button that routes the selected term directly into the Study Hub.
-
-### 13.3 `NotebookScreen.kt`
-* Dual tabs: **Favorites** and **Study Notes**.
-* Dynamic tag filter bar allowing filtering by custom user tags.
-* Delete, export, and quick-open actions on all saved studies.
-
----
-
-## 14. Sharing, Copying & Export System Specification
-
-### 14.1 Individual AI Response Sharing
-Every AI response message rendered in the `WordStudyChatView` contains:
-* **Header Quick Actions:** Accessible Copy (`Icons.Outlined.ContentCopy`) and Share (`Icons.Outlined.Share`) icon buttons.
-* **Bottom Action Row:** Prominent labeled action pills:
-  * `[📋 Copy Response]` — Copies response to clipboard and shows confirmation Toast.
-  * `[↗ Share Response]` — Generates a formatted share payload and opens the native Android Share Sheet:
-
-```kotlin
-val shareBody = buildString {
-    appendLine("📜 Biblical Philologist Response")
-    if (study != null) {
-        appendLine("Subject: ${study.word} (${study.originalWord} - ${study.transliteration})")
-    }
-    appendLine("──────────────────────────────")
-    appendLine(message.text)
-    if (message.isGrounded && message.sources.isNotEmpty()) {
-        appendLine("\n─── Audited Academic Sources ───")
-        message.sources.take(3).forEach { s ->
-            appendLine("• ${s.title}")
-        }
-    }
-    appendLine("\nShared from Word Context • Historical Exegesis Engine")
-}
-
-val sendIntent = Intent().apply {
-    action = Intent.ACTION_SEND
-    putExtra(Intent.EXTRA_SUBJECT, if (study != null) "Word Study: ${study.word}" else "Biblical Philology Response")
-    putExtra(Intent.EXTRA_TEXT, shareBody)
-    type = "text/plain"
-}
-context.startActivity(Intent.createChooser(sendIntent, "Share AI Response via"))
-```
-
-### 14.2 Full Dialogue Transcript Sharing
-Located in the top bar of `WordStudyChatView`:
-* Collates all user questions and AI philologist responses into an academic Q&A dialogue transcript.
-* Includes timestamps, subject word, and academic citations.
-* Dispatches standard `Intent.ACTION_SEND` chooser.
-
-### 14.3 Patristic Quote Sharing
-Located in `PatristicWitnessCard.kt`:
-* Allows one-tap sharing or copying of direct quotations from the Church Fathers, including Father name, century, work cited, and theological significance.
-
----
-
-## 15. Step-by-Step Reconstruction Manual for Autonomous AI
-
-An AI system reading this blueprint can construct the entire application from scratch by following this exact 12-step sequence:
-
-### Step 1: Configure Build & Dependency Matrix
-1. Create `gradle/libs.versions.toml` with the exact versions and libraries listed in Section 3.1.
-2. Create `settings.gradle.kts` setting `rootProject.name = "Word Context"` and including `:app`.
-3. Create `app/build.gradle.kts` applying plugins (`android.application`, `kotlin.compose`, `google.devtools.ksp`, `secrets`, `google.services`), configuring Java 11, `buildFeatures { compose = true; buildConfig = true }`, and adding the Room, Retrofit, Moshi, and Compose dependencies.
-
-### Step 2: Configure Android Manifest & Assets
-1. Write `app/src/main/AndroidManifest.xml` with `INTERNET` permission and launcher activity.
-2. In `app/src/main/res/values/strings.xml`, declare `<string name="app_name">Word Context</string>`.
-3. Configure `metadata.json` with platform title and `MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API`.
-
-### Step 3: Implement Theme Tokens
-1. Create `ui/theme/Color.kt` containing Midnight Sanctum and Scholar's Desk palettes.
-2. Create `ui/theme/Type.kt` containing Ancient Serif, Sans-Serif, and Monospace styles.
-3. Create `ui/theme/Theme.kt` with `WordContextTheme` composable accepting `AppThemeMode`.
-
-### Step 4: Implement Domain Models & Room SQLite Layer
-1. Create `data/model/WordStudy.kt` as an `@Entity(tableName = "word_studies")` with all 30 fields.
-2. Create `data/local/AppSetting.kt` with `@Entity(tableName = "app_settings")` and `AppSettingDao`.
-3. Create `data/local/Converters.kt` with Moshi TypeConverters for `List<String>`.
-4. Create `data/local/WordStudyDao.kt` with all query, insert, update, and Flow observation methods.
-5. Create `data/local/AppDatabase.kt` abstract Room database class (version 6, `fallbackToDestructiveMigration(true)`).
-
-### Step 5: Implement Seed Data & Knowledge Bases
-1. Create `data/local/CuratedWordStudies.kt` providing seed studies for 13 NT Greek and 9 OT Hebrew terms.
-2. Create `data/local/StrongsConcordanceData.kt` implementing the offline Strong's lexicon entries.
-3. Create `data/local/PatristicWitnessData.kt` containing Church Fathers quotes grouped by epoch.
-4. Create `data/local/PhilologyFamilyHelper.kt` generating morphological root tables.
-5. Create `data/local/LinguisticAnomalyHelper.kt` identifying contronyms, homonyms, and translation disconnects.
-
-### Step 6: Implement Verification & AI Client
-1. Create `data/verification/SourceTrustVerifier.kt` with domain registries, `TrustTier` enum, and scoring logic.
-2. Create `data/api/GeminiModels.kt` defining Moshi-annotated `GenerateContentRequest` and `GenerateContentResponse`.
-3. Create `data/api/GeminiApiService.kt` and `RetrofitClient` with 60-second timeouts.
-
-### Step 7: Implement Repository Layer
-1. Create `data/repository/WordStudyRepository.kt` combining cache-first DB queries, curated fallbacks, and Gemini API calls with the Philologist prompt.
-
-### Step 8: Implement ViewModel & State
-1. Create `ui/ChatMessage.kt` and `ui/SearchUiState.kt`.
-2. Create `ui/WordStudyViewModel.kt` managing `SearchUiState`, `themeMode`, `chatMessages`, and dual persistence across SharedPreferences and Room.
-
-### Step 9: Implement Reusable UI Components
-1. Create `ui/components/PatristicWitnessCard.kt` with epoch tabs, quote display, and copy/share buttons.
-2. Create `ui/components/LinguisticDisconnectAlertCard.kt` displaying anomaly warnings.
-3. Create `ui/components/ExegeticalNotesSection.kt` with note editor and tag pills.
-4. Create `ui/components/StudyExportSheet.kt` with Sermon, Paper, and Card export formats.
-
-### Step 10: Implement Core Screens
-1. Create `ui/screens/LexiconScreen.kt` for browsing Strong's Concordance.
-2. Create `ui/screens/NotebookScreen.kt` for saved favorites and notes.
-3. Create `ui/screens/PaywallScreen.kt`, `OnboardingDialog.kt`, and `LegalDisclosuresDialog.kt`.
-4. Create `ui/screens/WordContextApp.kt` assembling the TopAppBar, BottomNav, Study Hub, and full-screen Ask AI dialog.
-
-### Step 11: Implement Entry Point
-1. Create `MainActivity.kt` with `enableEdgeToEdge()`, ViewModel initialization, and `WordContextApp` rendering inside `WordContextTheme`.
-
-### Step 12: Test & Compile
-1. Run `compile_applet` (or `gradle compileDebugSources`) to verify complete compilation.
-2. Run `gradle :app:testDebugUnitTest` to execute local JVM and Robolectric tests.
-
----
-
-## 16. Verification, Testing & Developer Maintenance Contract
-
-### 16.1 Verification Commands
+### 17.1 Verification Commands
 ```bash
 # 1. Compile all Kotlin sources
 gradle compileDebugSources
@@ -888,7 +757,7 @@ gradle compileDebugSources
 gradle :app:testDebugUnitTest
 ```
 
-### 16.2 Autonomous Maintenance Contract
+### 17.2 Autonomous Maintenance Contract
 > **MANDATORY DIRECTIVE FOR ALL CONTRIBUTING AGENTS & ENGINEERS:**
 > Whenever any feature, database column, screen, component, or AI prompt is introduced, altered, or refactored, **YOU MUST UPDATE THIS `README.md` FILE IMMEDIATELY**.
 > This blueprint must remain perpetually in sync with the codebase so that any future engineer or autonomous AI agent can understand, maintain, or rebuild the entire application without ambiguity.

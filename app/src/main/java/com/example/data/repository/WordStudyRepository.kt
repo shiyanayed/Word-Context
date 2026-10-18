@@ -188,6 +188,9 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
             - "keyScriptures": Array of Strings (3-4 key scripture verses with references, e.g., ["Romans 8:15", "Galatians 4:5"])
             - "closingInsight": String (one elegant, powerful closing insight summarizing what modern believers miss about their faith by not knowing this original legal, historical, or cultural meaning)
             - "searchGroundingSources": Array of Strings (2-3 primary historical/epigraphic inscriptions, classical authors like Tacitus/Josephus, or peer-reviewed monographs supporting this study)
+
+            STRICT CLEAN TYPOGRAPHY MANDATE:
+            NEVER use triple asterisks (***) anywhere in your output values. Do NOT use raw asterisks for section headers or decorative dividers. Format your text cleanly with clear paragraphs and natural emphasis without raw asterisks.
         """.trimIndent()
 
         val promptText = "Provide an in-depth Bible word study for the word: '$cleanedWord'.\n" +
@@ -454,10 +457,17 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
                 word = cleanedWord,
                 testament = cleanedTestament,
                 timestamp = System.currentTimeMillis(),
+                thenMeaning = sanitizeAiText(parsedStudy.thenMeaning),
+                nowMeaning = sanitizeAiText(parsedStudy.nowMeaning),
+                historicalBackground = sanitizeAiText(parsedStudy.historicalBackground),
+                culturalContext = sanitizeAiText(parsedStudy.culturalContext),
+                legalDimension = sanitizeAiText(parsedStudy.legalDimension),
+                theologicalWeight = sanitizeAiText(parsedStudy.theologicalWeight),
+                closingInsight = sanitizeAiText(parsedStudy.closingInsight),
                 searchGroundingSources = verifiedSourceStrings,
                 rootLemma = resolvedRootLemma,
                 morphologicalFamilyTable = resolvedTable,
-                translationDisconnect = resolvedDisconnect,
+                translationDisconnect = sanitizeAiText(resolvedDisconnect),
                 hasLinguisticAnomaly = finalHasAnomaly,
                 anomalyType = finalAnomalyType,
                 anomalyRootWord = finalRootWord,
@@ -586,6 +596,7 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
                 4. FORMAT WITH COMPARATIVE TABLES: Always use a markdown table to map out the Noun, Verb, and Adjective forms of the original Greek/Hebrew root, showing their corresponding English translations so the user can visually track the structural connection instantly.
 
                 Answer the user's questions in deep, exhaustive scholarly detail with structured markdown headers, bold terms, and comparative tables.
+                STRICT CLEAN TYPOGRAPHY MANDATE: NEVER use triple asterisks (***) anywhere in your response. Do not use asterisks as horizontal dividers or decorative lines. Use clean paragraphs, bold terms without extra asterisks, and clean spacing.
             """.trimIndent()
         }
 
@@ -703,7 +714,7 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
                     )
 
                     aiResponse = AiChatResponse(
-                        text = text,
+                        text = sanitizeAiText(text),
                         searchQueries = searchQueries,
                         sources = verifiedSources,
                         isGrounded = withGrounding && (verifiedSources.isNotEmpty() || searchQueries.isNotEmpty()),
@@ -895,5 +906,16 @@ class WordStudyRepository(private val wordStudyDao: WordStudyDao) {
             val (verifiedSources, verificationMeta) = SourceTrustVerifier.auditAndFilterSources(fallbackSources, strictFilter = true)
             AiChatResponse(text = fallback, sources = verifiedSources, isGrounded = true, verification = verificationMeta)
         }
+    }
+
+    private fun sanitizeAiText(raw: String): String {
+        if (raw.isBlank()) return raw
+        return raw
+            .lines()
+            .filterNot { it.trim() == "***" || it.trim() == "---" || it.trim() == "___" }
+            .joinToString("\n")
+            .replace(Regex("""\*\*\*([^*\n]+?)\*\*\*"""), "**$1**")
+            .replace(Regex("""\*{3,}"""), "")
+            .trim()
     }
 }
